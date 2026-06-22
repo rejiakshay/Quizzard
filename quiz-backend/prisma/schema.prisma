@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id            Int            @id @default(autoincrement())
+  googleId      String         @unique
+  email         String?        @unique
+  name          String?
+  pictureUrl    String?
+  isAdmin       Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  scores        Score[]
+  responses     UserResponse[]
+  quizzesCreated Quiz[]
+  quizPlays     QuizPlay[]
+}
+
+model Quiz {
+  id          Int         @id @default(autoincrement())
+  title       String
+  description String?
+  tag         String?
+  difficulty  String?
+  creator     User?       @relation(fields: [createdBy], references: [id])
+  createdBy   Int?
+  createdAt   DateTime    @default(now())
+  isPublished Boolean     @default(false)
+  questions   Question[]
+  scores      Score[]
+  responses   UserResponse[]
+  plays       QuizPlay[]
+}
+
+model QuizPlay {
+  id        Int      @id @default(autoincrement())
+  quiz      Quiz     @relation(fields: [quizId], references: [id])
+  quizId    Int
+  quizTitle String
+  quizTag   String?
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    Int?
+  playedAt  DateTime @default(now())
+  ipAddress String?
+  country   String?
+  city      String?
+  region    String?
+}
+
+model Question {
+  id             Int            @id @default(autoincrement())
+  quiz           Quiz           @relation(fields: [quizId], references: [id])
+  quizId         Int
+  questionText   String
+  type           String         @default("multiple_choice")
+  order          Int            @default(0)
+  funFact        String?
+  options        Option[]
+  userResponses  UserResponse[]
+}
+
+model Option {
+  id              Int            @id @default(autoincrement())
+  question        Question       @relation(fields: [questionId], references: [id])
+  questionId      Int
+  text            String
+  isCorrect       Boolean        @default(false)
+  userResponses   UserResponse[]
+}
+
+model Score {
+  id          Int      @id @default(autoincrement())
+  user        User?    @relation(fields: [userId], references: [id])
+  userId      Int?
+  quiz        Quiz     @relation(fields: [quizId], references: [id])
+  quizId      Int
+  score       Int
+  completedAt DateTime @default(now())
+
+  @@unique([userId, quizId])
+}
+
+model UserResponse {
+  id               Int      @id @default(autoincrement())
+  user             User?    @relation(fields: [userId], references: [id])
+  userId           Int?
+  quiz             Quiz     @relation(fields: [quizId], references: [id])
+  quizId           Int
+  question         Question @relation(fields: [questionId], references: [id])
+  questionId       Int
+  selectedOption   Option?  @relation(fields: [selectedOptionId], references: [id])
+  selectedOptionId Int?
+  isCorrect        Boolean
+  createdAt        DateTime @default(now())
+
+  @@unique([userId, quizId, questionId])
+}

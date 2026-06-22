@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+quiz-frontend/node_modules/
+quiz-backend/node_modules/
+
+# Environment & secrets
+quiz-backend/.env
+.env
+.env.local
+
+# Database
+*.db
+*.db-journal
+
+# Build output
+quiz-frontend/dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
