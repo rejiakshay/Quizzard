@@ -13,6 +13,7 @@ app.use(cors({
   origin: [
     'http://localhost:5173',
     'https://quizzard.vercel.app',
+    'https://quizzard-pearl.vercel.app',
     /\.vercel\.app$/,
   ],
   credentials: true,
