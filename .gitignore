@@ -8,8 +8,7 @@ quiz-backend/.env
 .env
 .env.local
 
-# Database
-*.db
+# Database journal only (keep the db file)
 *.db-journal
 
 # Build output
