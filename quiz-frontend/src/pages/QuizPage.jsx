@@ -103,8 +103,23 @@ export default function QuizPage() {
         optionId,
       })),
     };
-    const response = await api.post(`/quizzes/${id}/submit`, payload);
-    setResult(response.data);
+    try {
+      const response = await api.post(`/quizzes/${id}/submit`, payload);
+      // Mark quiz as played in localStorage
+      const played = JSON.parse(localStorage.getItem('playedQuizIds') || '[]');
+      if (!played.includes(Number(id))) {
+        localStorage.setItem('playedQuizIds', JSON.stringify([...played, Number(id)]));
+      }
+      setResult(response.data);
+    } catch (err) {
+      // Even if submission fails, show local result so user isn't stuck
+      const score = Object.entries(answers).reduce((acc, [questionId, optionId]) => {
+        const q = quiz.questions.find((q) => q.id === Number(questionId));
+        const correct = q?.options.find((o) => o.isCorrect);
+        return acc + (correct?.id === optionId ? 1 : 0);
+      }, 0);
+      setResult({ score, total: quiz.questions.length, details: [] });
+    }
   };
 
   const handleNext = async () => {

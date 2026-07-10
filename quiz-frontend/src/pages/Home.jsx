@@ -29,6 +29,9 @@ export default function Home() {
   const [selectedTag, setSelectedTag] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [pendingQuizId, setPendingQuizId] = useState(null);
+  const [playedQuizIds, setPlayedQuizIds] = useState(() =>
+    JSON.parse(localStorage.getItem('playedQuizIds') || '[]')
+  );
   const navigate = useNavigate();
 
   const startQuiz = async (quizId) => {
@@ -73,6 +76,8 @@ export default function Home() {
     api.get('/quizzes/stats')
       .then((r) => setTotalPlays(r.data.totalPlays))
       .catch(console.error);
+    // Sync played IDs in case user just came back from a quiz
+    setPlayedQuizIds(JSON.parse(localStorage.getItem('playedQuizIds') || '[]'));
   }, []);
 
   // Group quizzes by tag
@@ -189,6 +194,9 @@ export default function Home() {
                       {diff && (
                         <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${diff.cls}`}>{diff.label}</span>
                       )}
+                      {playedQuizIds.includes(quiz.id) && (
+                        <span className="rounded-full px-2.5 py-0.5 text-xs font-semibold bg-emerald-100 text-emerald-700">✓ Played</span>
+                      )}
                     </div>
                     <h4 className="text-lg font-bold text-slate-900">{quiz.title}</h4>
                     <p className="mt-2 text-sm text-slate-500 leading-relaxed">
@@ -197,9 +205,13 @@ export default function Home() {
                   </div>
                   <button
                     onClick={() => handleStartQuiz(quiz.id)}
-                    className={`mt-5 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r ${tagMeta(selectedTag).gradient} px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:opacity-90`}
+                    className={`mt-5 inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold shadow-md transition hover:opacity-90 ${
+                      playedQuizIds.includes(quiz.id)
+                        ? 'bg-emerald-50 border-2 border-emerald-300 text-emerald-700 hover:bg-emerald-100'
+                        : `bg-gradient-to-r ${tagMeta(selectedTag).gradient} text-white`
+                    }`}
                   >
-                    Start quiz →
+                    {playedQuizIds.includes(quiz.id) ? '↩ Play again' : 'Start quiz →'}
                   </button>
                 </article>
               );
