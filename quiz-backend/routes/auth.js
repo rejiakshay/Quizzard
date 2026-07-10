@@ -1,5 +1,6 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const { OAuth2Client } = require('google-auth-library');
 const prisma = require('../config/database');
 const { authenticate } = require('../middleware/auth');
@@ -94,6 +95,65 @@ router.post('/login', async (req, res) => {
       pictureUrl: null,
       isAdmin: true,
     },
+  });
+});
+
+router.post('/register', async (req, res) => {
+  const { name, email, password } = req.body;
+  if (!name || !email || !password) {
+    return res.status(400).json({ message: 'Name, email and password are required' });
+  }
+  if (password.length < 6) {
+    return res.status(400).json({ message: 'Password must be at least 6 characters' });
+  }
+
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) {
+    return res.status(409).json({ message: 'Email already registered. Please sign in.' });
+  }
+
+  const passwordHash = await bcrypt.hash(password, 10);
+  const user = await prisma.user.create({
+    data: { name, email, passwordHash },
+  });
+
+  const jwtToken = jwt.sign(
+    { userId: user.id, email: user.email, name: user.name, pictureUrl: user.pictureUrl, isAdmin: user.isAdmin },
+    JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+
+  res.status(201).json({
+    token: jwtToken,
+    user: { id: user.id, name: user.name, email: user.email, pictureUrl: user.pictureUrl, isAdmin: user.isAdmin },
+  });
+});
+
+router.post('/email-login', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and password are required' });
+  }
+
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user || !user.passwordHash) {
+    return res.status(401).json({ message: 'Invalid email or password' });
+  }
+
+  const valid = await bcrypt.compare(password, user.passwordHash);
+  if (!valid) {
+    return res.status(401).json({ message: 'Invalid email or password' });
+  }
+
+  const jwtToken = jwt.sign(
+    { userId: user.id, email: user.email, name: user.name, pictureUrl: user.pictureUrl, isAdmin: user.isAdmin },
+    JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+
+  res.json({
+    token: jwtToken,
+    user: { id: user.id, name: user.name, email: user.email, pictureUrl: user.pictureUrl, isAdmin: user.isAdmin },
   });
 });
 

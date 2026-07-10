@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
+import { AuthContext } from '../context/AuthContext';
+import LoginModal from '../components/LoginModal';
 
 const TAG_META = {
   Geography:  { emoji: '🌍', gradient: 'from-cyan-500 to-blue-500',   light: 'bg-cyan-50  border-cyan-200  text-cyan-700'  },
@@ -20,13 +22,16 @@ function tagMeta(tag) {
 const difficultyLabel = { easy: { label: 'Easy', cls: 'bg-emerald-100 text-emerald-700' }, medium: { label: 'Medium', cls: 'bg-amber-100 text-amber-700' }, hard: { label: 'Hard', cls: 'bg-rose-100 text-rose-700' } };
 
 export default function Home() {
+  const { user } = useContext(AuthContext);
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalPlays, setTotalPlays] = useState(null);
   const [selectedTag, setSelectedTag] = useState(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [pendingQuizId, setPendingQuizId] = useState(null);
   const navigate = useNavigate();
 
-  const handleStartQuiz = async (quizId) => {
+  const startQuiz = async (quizId) => {
     try {
       await api.post(`/quizzes/${quizId}/play`);
       setTotalPlays((prev) => (prev !== null ? prev + 1 : prev));
@@ -34,6 +39,30 @@ export default function Home() {
       console.error('Failed to record play:', err);
     }
     navigate(`/quiz/${quizId}`);
+  };
+
+  const handleStartQuiz = (quizId) => {
+    if (!user) {
+      setPendingQuizId(quizId);
+      setShowLoginModal(true);
+    } else {
+      startQuiz(quizId);
+    }
+  };
+
+  const handleModalClose = () => {
+    setShowLoginModal(false);
+    setPendingQuizId(null);
+  };
+
+  const handleGuest = () => {
+    setShowLoginModal(false);
+    if (pendingQuizId) startQuiz(pendingQuizId);
+  };
+
+  const handleLoginSuccess = () => {
+    setShowLoginModal(false);
+    if (pendingQuizId) startQuiz(pendingQuizId);
   };
 
   useEffect(() => {
@@ -59,6 +88,13 @@ export default function Home() {
 
   return (
     <div className="space-y-10">
+      {showLoginModal && (
+        <LoginModal
+          onClose={handleModalClose}
+          onGuest={handleGuest}
+          onSuccess={handleLoginSuccess}
+        />
+      )}
       {/* Hero */}
       <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-cyan-500 p-10 shadow-2xl shadow-blue-200">
         <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
