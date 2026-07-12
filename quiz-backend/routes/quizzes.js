@@ -120,31 +120,36 @@ router.post('/:id/submit', optionalAuthenticate, async (req, res) => {
   let newTotalPoints = null;
 
   if (req.user?.userId && req.user.userId > 0) {
-    scoreData.userId = req.user.userId;
-    await prisma.score.upsert({
-      where: { userId_quizId: { userId: req.user.userId, quizId } },
-      update: { score: correctCount, completedAt: new Date() },
-      create: { userId: req.user.userId, quizId, score: correctCount },
-    });
+    try {
+      await prisma.score.upsert({
+        where: { userId_quizId: { userId: req.user.userId, quizId } },
+        update: { score: correctCount, completedAt: new Date() },
+        create: { userId: req.user.userId, quizId, score: correctCount },
+      });
 
-    await prisma.userResponse.createMany({
-      data: details.map((detail) => ({
-        userId: req.user.userId,
-        quizId,
-        questionId: detail.questionId,
-        selectedOptionId: detail.selectedOptionId,
-        isCorrect: detail.isCorrect,
-      })),
-      skipDuplicates: true,
-    });
+      await prisma.userResponse.createMany({
+        data: details.map((detail) => ({
+          userId: req.user.userId,
+          quizId,
+          questionId: detail.questionId,
+          selectedOptionId: detail.selectedOptionId,
+          isCorrect: detail.isCorrect,
+        })),
+        skipDuplicates: true,
+      });
 
-    // Award points
-    const user = await prisma.user.findUnique({ where: { id: req.user.userId }, select: { totalPoints: true } });
-    pointsEarned = scoreQuiz(correctCount, questions.length);
-    levelBefore = getLevel(user.totalPoints);
-    newTotalPoints = user.totalPoints + pointsEarned;
-    levelAfter = getLevel(newTotalPoints);
-    await prisma.user.update({ where: { id: req.user.userId }, data: { totalPoints: newTotalPoints } });
+      // Award points
+      const user = await prisma.user.findUnique({ where: { id: req.user.userId }, select: { totalPoints: true } });
+      if (user) {
+        pointsEarned = scoreQuiz(correctCount, questions.length);
+        levelBefore = getLevel(user.totalPoints);
+        newTotalPoints = user.totalPoints + pointsEarned;
+        levelAfter = getLevel(newTotalPoints);
+        await prisma.user.update({ where: { id: req.user.userId }, data: { totalPoints: newTotalPoints } });
+      }
+    } catch (err) {
+      console.error('Score/points save error (stale session?):', err.message);
+    }
   }
 
   res.json({
