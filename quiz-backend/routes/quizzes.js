@@ -2,6 +2,37 @@ const express = require('express');
 const prisma = require('../config/database');
 const { optionalAuthenticate } = require('../middleware/auth');
 
+// Level logic (mirrors frontend utils/levels.js)
+const TIERS = [
+  { name: 'Amateur',     min: 1000, max: 1499 },
+  { name: 'Expert',      min: 1500, max: 1999 },
+  { name: 'Master',      min: 2000, max: 2499 },
+  { name: 'Grandmaster', min: 2500, max: Infinity },
+];
+const ROMAN = ['I', 'II', 'III', 'IV', 'V'];
+const toRoman = (n) => ROMAN[n - 1] || String(n);
+
+function getLevel(totalPoints) {
+  const SUBLEVEL_SIZE = 100;
+  const tier = TIERS.find(t => totalPoints >= t.min && totalPoints <= t.max);
+  if (!tier) {
+    const band = Math.floor((totalPoints - 2500) / 500);
+    const bandMin = 2500 + band * 500;
+    const offset = totalPoints - bandMin;
+    const subLevel = Math.min(5, Math.floor(offset / SUBLEVEL_SIZE) + 1);
+    return { tierName: 'Grandmaster', subLevel, label: `Grandmaster ${toRoman(subLevel)}`, progressInSub: offset % SUBLEVEL_SIZE };
+  }
+  const offset = totalPoints - tier.min;
+  const subLevel = Math.min(5, Math.floor(offset / SUBLEVEL_SIZE) + 1);
+  return { tierName: tier.name, subLevel, label: `${tier.name} ${toRoman(subLevel)}`, progressInSub: offset % SUBLEVEL_SIZE };
+}
+
+function scoreQuiz(correctCount, total) {
+  let earned = correctCount * 5;
+  if (correctCount === total) earned += 50;
+  return earned;
+}
+
 const router = express.Router();
 
 router.get('/stats', async (req, res) => {
@@ -83,7 +114,12 @@ router.post('/:id/submit', optionalAuthenticate, async (req, res) => {
     score: correctCount,
   };
 
-  if (req.user?.userId) {
+  let pointsEarned = 0;
+  let levelBefore = null;
+  let levelAfter = null;
+  let newTotalPoints = null;
+
+  if (req.user?.userId && req.user.userId > 0) {
     scoreData.userId = req.user.userId;
     await prisma.score.upsert({
       where: { userId_quizId: { userId: req.user.userId, quizId } },
@@ -101,12 +137,24 @@ router.post('/:id/submit', optionalAuthenticate, async (req, res) => {
       })),
       skipDuplicates: true,
     });
+
+    // Award points
+    const user = await prisma.user.findUnique({ where: { id: req.user.userId }, select: { totalPoints: true } });
+    pointsEarned = scoreQuiz(correctCount, questions.length);
+    levelBefore = getLevel(user.totalPoints);
+    newTotalPoints = user.totalPoints + pointsEarned;
+    levelAfter = getLevel(newTotalPoints);
+    await prisma.user.update({ where: { id: req.user.userId }, data: { totalPoints: newTotalPoints } });
   }
 
   res.json({
     score: correctCount,
     total: questions.length,
     details,
+    pointsEarned,
+    totalPoints: newTotalPoints,
+    levelBefore,
+    levelAfter,
   });
 });
 

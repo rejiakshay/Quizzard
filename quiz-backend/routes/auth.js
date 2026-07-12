@@ -55,6 +55,7 @@ router.post('/google', async (req, res) => {
         name: user.name,
         pictureUrl: user.pictureUrl,
         isAdmin: user.isAdmin,
+        totalPoints: user.totalPoints,
       },
     });
   } catch (error) {
@@ -125,7 +126,7 @@ router.post('/register', async (req, res) => {
 
   res.status(201).json({
     token: jwtToken,
-    user: { id: user.id, name: user.name, email: user.email, pictureUrl: user.pictureUrl, isAdmin: user.isAdmin },
+    user: { id: user.id, name: user.name, email: user.email, pictureUrl: user.pictureUrl, isAdmin: user.isAdmin, totalPoints: user.totalPoints },
   });
 });
 
@@ -153,14 +154,14 @@ router.post('/email-login', async (req, res) => {
 
   res.json({
     token: jwtToken,
-    user: { id: user.id, name: user.name, email: user.email, pictureUrl: user.pictureUrl, isAdmin: user.isAdmin },
+    user: { id: user.id, name: user.name, email: user.email, pictureUrl: user.pictureUrl, isAdmin: user.isAdmin, totalPoints: user.totalPoints },
   });
 });
 
 router.get('/user', authenticate, async (req, res) => {
   const user = await prisma.user.findUnique({
     where: { id: req.user.userId },
-    select: { id: true, email: true, name: true, pictureUrl: true, isAdmin: true },
+    select: { id: true, email: true, name: true, pictureUrl: true, isAdmin: true, totalPoints: true },
   });
 
   if (!user) {

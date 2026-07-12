@@ -13,20 +13,16 @@ function App() {
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ''}>
       <AuthProvider>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 text-slate-900">
-          <Router>
-            <Header />
-            <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/quiz/:id" element={<QuizPage />} />
-                <Route path="/leaderboard" element={<Leaderboard />} />
-                <Route path="/admin" element={<AdminPanel />} />
-                <Route path="/admin/:id" element={<AdminQuizDetails />} />
-              </Routes>
-            </main>
-          </Router>
-        </div>
+        <Router>
+          <Header />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/quiz/:id" element={<QuizPage />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/admin" element={<AdminPanel />} />
+            <Route path="/admin/:id" element={<AdminQuizDetails />} />
+          </Routes>
+        </Router>
       </AuthProvider>
     </GoogleOAuthProvider>
   );

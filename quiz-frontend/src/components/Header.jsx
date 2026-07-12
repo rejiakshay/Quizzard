@@ -1,79 +1,117 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { GoogleLogin } from '@react-oauth/google';
+import { getLevel } from '../utils/levels';
 import api from '../utils/api';
 
 export default function Header() {
   const { user, setUser } = useContext(AuthContext);
-
-  const handleGoogleSuccess = async (credentialResponse) => {
-    const idToken = credentialResponse?.credential;
-    if (!idToken) return;
-
-    try {
-      const response = await api.post('/auth/google', { token: idToken });
-      const { token, user: userData } = response.data;
-      localStorage.setItem('quizAppToken', token);
-      setUser(userData);
-    } catch (error) {
-      console.error('Google login failed', error);
-    }
-  };
-
-  const handleGoogleError = () => {
-    console.error('Google login failed');
-  };
+  const [showMenu, setShowMenu] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem('quizAppToken');
     setUser(null);
+    setShowMenu(false);
   };
 
   return (
-    <header className="bg-white/80 backdrop-blur-md border-b border-blue-100 shadow-sm sticky top-0 z-50">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
-        <div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent tracking-tight">
-            Quizzard
-          </h1>
-          <p className="text-xs text-slate-400 font-medium">Play. Learn. Compete.</p>
-        </div>
+    <header style={{ background: 'var(--ink)', borderBottom: '1px solid rgba(255,255,255,0.06)', position: 'sticky', top: 0, zIndex: 50 }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '20px 48px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 
-        <nav className="hidden items-center gap-1 md:flex">
+        {/* Logo */}
+        <NavLink to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+          <span style={{
+            width: 10, height: 10, borderRadius: '50%',
+            background: 'var(--pink)',
+            boxShadow: '0 0 0 3px rgba(255,59,105,0.2)',
+            display: 'inline-block',
+            flexShrink: 0,
+          }} />
+          <span className="font-display" style={{ fontSize: 20, color: 'var(--paper)', letterSpacing: '-0.5px' }}>
+            Quizzard
+          </span>
+        </NavLink>
+
+        {/* Nav links */}
+        <nav style={{ display: 'flex', gap: 32 }}>
           {[{ to: '/', label: 'Home' }, { to: '/leaderboard', label: 'Leaderboards' }, { to: '/admin', label: 'Admin' }].map(({ to, label }) => (
             <NavLink
               key={to}
               to={to}
-              className={({ isActive }) =>
-                isActive
-                  ? 'rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-blue-200'
-                  : 'rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-blue-50 hover:text-blue-700 transition'
-              }
+              end={to === '/'}
+              style={({ isActive }) => ({
+                color: isActive ? 'var(--paper)' : 'var(--slate)',
+                fontSize: 14, fontWeight: 500, textDecoration: 'none',
+                transition: 'color 0.2s',
+              })}
             >
               {label}
             </NavLink>
           ))}
         </nav>
 
-        <div className="flex items-center gap-3">
-          {user ? (
-            <div className="flex items-center gap-3 rounded-2xl border border-blue-100 bg-blue-50 px-3 py-2 shadow-sm">
-              {user.pictureUrl && (
-                <img className="h-8 w-8 rounded-full ring-2 ring-blue-300" src={user.pictureUrl} alt={user.name} />
-              )}
-              <span className="text-sm font-semibold text-slate-700">{user.name}</span>
-              <button
-                onClick={handleLogout}
-                className="rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 px-3 py-1.5 text-xs font-semibold text-white shadow hover:from-blue-700 hover:to-cyan-600 transition"
-              >
-                Logout
-              </button>
-            </div>
-          ) : (
-            <GoogleLogin onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
-          )}
-        </div>
+        {/* Auth */}
+        {user ? (
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => setShowMenu(v => !v)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 6, padding: '8px 14px', cursor: 'pointer', color: 'var(--paper)',
+              }}
+            >
+              {user.pictureUrl && <img src={user.pictureUrl} alt="" style={{ width: 24, height: 24, borderRadius: '50%' }} />}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                <span style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.2 }}>{user.name}</span>
+                {user.totalPoints && (
+                  <span style={{ fontSize: 10, color: 'var(--yellow)', fontFamily: 'JetBrains Mono, monospace', fontWeight: 700 }}>
+                    {getLevel(user.totalPoints).label}
+                  </span>
+                )}
+              </div>
+              <span style={{ fontSize: 10, color: 'var(--slate)' }}>▾</span>
+            </button>
+            {showMenu && (
+              <div style={{
+                position: 'absolute', right: 0, top: 'calc(100% + 8px)',
+                background: 'var(--ink-2)', border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 8, overflow: 'hidden', minWidth: 140,
+                boxShadow: '0 12px 32px rgba(0,0,0,0.4)',
+              }}>
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    width: '100%', padding: '12px 16px', textAlign: 'left',
+                    background: 'none', border: 'none', color: 'var(--paper)',
+                    fontSize: 13, fontWeight: 500, cursor: 'pointer',
+                  }}
+                  onMouseEnter={e => e.target.style.background = 'rgba(255,255,255,0.06)'}
+                  onMouseLeave={e => e.target.style.background = 'none'}
+                >
+                  Sign out
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <NavLink to="/" onClick={() => {}} style={{ textDecoration: 'none' }}>
+            <button
+              style={{
+                background: 'var(--paper)', color: 'var(--ink)',
+                border: 'none', padding: '10px 20px', borderRadius: 6,
+                fontWeight: 700, fontSize: 13, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 8,
+              }}
+              onClick={() => {
+                // Dispatch a custom event so Home can open the login modal
+                window.dispatchEvent(new CustomEvent('quizzard:openLogin'));
+              }}
+            >
+              Sign in
+            </button>
+          </NavLink>
+        )}
       </div>
     </header>
   );
