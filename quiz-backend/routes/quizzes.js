@@ -1,6 +1,6 @@
 const express = require('express');
 const prisma = require('../config/database');
-const { optionalAuthenticate } = require('../middleware/auth');
+const { optionalAuthenticate, authenticate } = require('../middleware/auth');
 
 // Level logic (mirrors frontend utils/levels.js)
 const TIERS = [
@@ -161,6 +161,19 @@ router.post('/:id/submit', optionalAuthenticate, async (req, res) => {
     levelBefore,
     levelAfter,
   });
+});
+
+router.get('/:id/my-responses', authenticate, async (req, res) => {
+  const quizId = Number(req.params.id);
+  try {
+    const responses = await prisma.userResponse.findMany({
+      where: { userId: req.user.userId, quizId },
+      select: { questionId: true, selectedOptionId: true, isCorrect: true },
+    });
+    res.json({ responses });
+  } catch (err) {
+    res.status(500).json({ responses: [] });
+  }
 });
 
 router.post('/:id/play', optionalAuthenticate, async (req, res) => {

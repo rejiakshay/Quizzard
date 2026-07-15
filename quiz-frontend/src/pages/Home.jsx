@@ -386,22 +386,37 @@ export default function Home() {
                       <div style={{ fontSize: 13, color: '#6b6f7d', lineHeight: 1.5, flex: 1, marginBottom: 16 }}>
                         {quiz.description || 'A quick, friendly quiz experience.'}
                       </div>
-                      <button
-                        onClick={() => handleStartQuiz(quiz.id)}
-                        style={{
-                          background: played ? 'transparent' : 'var(--ink)',
-                          color: played ? 'var(--ink)' : 'var(--paper)',
-                          border: played ? '1.5px solid var(--ink)' : 'none',
-                          borderRadius: 6, padding: '10px 18px',
-                          fontWeight: 700, fontSize: 13, cursor: 'pointer',
-                          transition: 'opacity 0.15s',
-                          alignSelf: 'flex-start',
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
-                        onMouseLeave={e => e.currentTarget.style.opacity = '1'}
-                      >
-                        {played ? '↩ Play again' : 'Start quiz →'}
-                      </button>
+                      {played ? (
+                        <button
+                          onClick={() => navigate(`/quiz/${quiz.id}?review=true`)}
+                          style={{
+                            background: 'transparent',
+                            color: '#1b7a3d',
+                            border: '1.5px solid #2ECC71',
+                            borderRadius: 6, padding: '10px 18px',
+                            fontWeight: 700, fontSize: 13, cursor: 'pointer',
+                            transition: 'opacity 0.15s', alignSelf: 'flex-start',
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+                          onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                        >
+                          📖 Review answers
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleStartQuiz(quiz.id)}
+                          style={{
+                            background: 'var(--ink)', color: 'var(--paper)',
+                            border: 'none', borderRadius: 6, padding: '10px 18px',
+                            fontWeight: 700, fontSize: 13, cursor: 'pointer',
+                            transition: 'opacity 0.15s', alignSelf: 'flex-start',
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+                          onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                        >
+                          Start quiz →
+                        </button>
+                      )}
                     </div>
                   );
                 })}

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useContext } from 'react';
 import api from '../utils/api';
 import { AuthContext } from '../context/AuthContext';
@@ -151,6 +151,8 @@ const card = {
 
 export default function QuizPage() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const isReview = searchParams.get('review') === 'true';
   const navigate = useNavigate();
   const { user, setUser } = useContext(AuthContext);
   const [quiz, setQuiz] = useState(null);
@@ -160,6 +162,7 @@ export default function QuizPage() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOptionId, setSelectedOptionId] = useState(null);
   const [currentQuestionResult, setCurrentQuestionResult] = useState(null);
+  const [pastResponses, setPastResponses] = useState(null);
 
   const [timerPct, setTimerPct] = useState(100);
   const [timeLeftDisplay, setTimeLeftDisplay] = useState(TIMER_SECONDS);
@@ -172,7 +175,15 @@ export default function QuizPage() {
       .then((r) => setQuiz(r.data.quiz))
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [id]);
+
+    if (isReview && user) {
+      api.get(`/quizzes/${id}/my-responses`)
+        .then(r => setPastResponses(r.data.responses))
+        .catch(() => setPastResponses([]));
+    } else if (isReview) {
+      setPastResponses([]);
+    }
+  }, [id, isReview, user]);
 
   const stopTimer = () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
 
@@ -285,6 +296,118 @@ export default function QuizPage() {
       <div style={{ ...card, textAlign: 'center', color: 'var(--slate)' }}>Quiz not found.</div>
     </div></div>
   );
+
+  // ── Review mode ──
+  if (isReview) {
+    const reviewLoading = user && pastResponses === null;
+    const responseMap = {};
+    (pastResponses || []).forEach(r => { responseMap[r.questionId] = r; });
+    const hasHistory = user && pastResponses && pastResponses.length > 0;
+    const correctCount = hasHistory ? (pastResponses || []).filter(r => r.isCorrect).length : null;
+
+    return (
+      <div style={wrap}>
+        <div style={inner}>
+          {/* Header */}
+          <div style={{ ...card, padding: '20px 28px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+              <div>
+                <p className="font-mono" style={{ fontSize: 10, color: 'var(--pink)', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>Review mode</p>
+                <h2 style={{ fontWeight: 700, fontSize: 18, color: 'var(--ink)' }}>{quiz.title}</h2>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                {hasHistory && (
+                  <span className="font-mono" style={{ fontSize: 13, fontWeight: 700, color: 'var(--slate)', background: '#f0ece3', padding: '6px 12px', borderRadius: 6 }}>
+                    Your score: {correctCount}/{quiz.questions.length}
+                  </span>
+                )}
+                <button
+                  onClick={() => navigate('/')}
+                  style={{ background: 'var(--ink)', color: 'var(--paper)', border: 'none', borderRadius: 6, padding: '9px 18px', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}
+                >
+                  ← Back
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {reviewLoading && (
+            <div style={{ ...card, textAlign: 'center', color: 'var(--slate)', padding: '32px' }}>Loading your answers…</div>
+          )}
+
+          {!reviewLoading && !hasHistory && user && (
+            <div style={{ ...card, textAlign: 'center', color: 'var(--slate)', fontSize: 13, padding: '20px' }}>
+              No saved responses found for this quiz. Your answers may have been recorded before history tracking was enabled.
+            </div>
+          )}
+
+          {!reviewLoading && !user && (
+            <div style={{ ...card, textAlign: 'center', color: 'var(--slate)', fontSize: 13, padding: '20px' }}>
+              Sign in to see your past answers. Showing correct answers only.
+            </div>
+          )}
+
+          {/* Questions */}
+          {!reviewLoading && quiz.questions.map((question, qi) => {
+            const past = responseMap[question.id];
+            const correctOption = question.options.find(o => o.isCorrect);
+
+            return (
+              <div key={question.id} style={{ ...card, padding: '22px 26px' }}>
+                <p className="font-mono" style={{ fontSize: 10, color: 'var(--slate)', fontWeight: 700, letterSpacing: '0.8px', textTransform: 'uppercase', marginBottom: 8 }}>
+                  Question {qi + 1}
+                </p>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink)', lineHeight: 1.5, marginBottom: 16 }}>{question.questionText}</h3>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {question.options.map((option) => {
+                    const isCorrect = option.isCorrect;
+                    const wasSelected = past?.selectedOptionId === option.id;
+                    const wasWrong = wasSelected && !isCorrect;
+
+                    let bg = '#f8f6f1', border = '#D8D4C8', color = '#6b6f7d';
+                    if (isCorrect) { bg = 'rgba(46,204,113,0.1)'; border = 'var(--green)'; color = '#1b7a3d'; }
+                    if (wasWrong)  { bg = 'rgba(255,59,105,0.08)'; border = 'var(--pink)'; color = '#b3325c'; }
+
+                    return (
+                      <div key={option.id} style={{
+                        background: bg, border: `1.5px solid ${border}`, color,
+                        borderRadius: 7, padding: '11px 16px',
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        fontSize: 14, fontWeight: isCorrect || wasWrong ? 600 : 400,
+                      }}>
+                        <span>{option.text}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, flexShrink: 0, marginLeft: 12 }}>
+                          {isCorrect && wasSelected && '✓ Your answer'}
+                          {isCorrect && !wasSelected && (past ? '← Correct answer' : '✓ Correct')}
+                          {wasWrong && '✗ Your answer'}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {question.funFact && (
+                  <div style={{ marginTop: 14, background: 'rgba(255,197,61,0.1)', border: '1px solid rgba(255,197,61,0.4)', borderRadius: 7, padding: '10px 14px' }}>
+                    <p style={{ fontSize: 12, color: '#8a6200', lineHeight: 1.5 }}>
+                      <span style={{ fontWeight: 700 }}>💡 Fun fact: </span>{question.funFact}
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          <button
+            onClick={() => navigate('/')}
+            style={{ alignSelf: 'center', background: 'var(--ink)', color: 'var(--paper)', border: 'none', borderRadius: 6, padding: '12px 28px', fontWeight: 700, fontSize: 14, cursor: 'pointer', marginTop: 8 }}
+          >
+            ← Back to categories
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (result) {
     const pct = Math.round((result.score / result.total) * 100);
