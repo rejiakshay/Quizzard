@@ -171,4 +171,93 @@ router.get('/user', authenticate, async (req, res) => {
   res.json({ user });
 });
 
+router.get('/profile', authenticate, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const [user, scores, responses] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, name: true, email: true, pictureUrl: true, bio: true, totalPoints: true, createdAt: true },
+      }),
+      prisma.score.findMany({
+        where: { userId },
+        include: { quiz: { select: { title: true, tag: true, questions: { select: { id: true } } } } },
+        orderBy: { completedAt: 'desc' },
+      }),
+      prisma.userResponse.findMany({
+        where: { userId },
+        select: { isCorrect: true, quiz: { select: { tag: true } } },
+      }),
+    ]);
+
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const totalQuizzes = scores.length;
+    const totalCorrect = responses.filter(r => r.isCorrect).length;
+    const totalAnswered = responses.length;
+    const accuracy = totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0;
+
+    // Category breakdown
+    const catMap = {};
+    for (const r of responses) {
+      const tag = r.quiz?.tag || 'General';
+      if (!catMap[tag]) catMap[tag] = { correct: 0, total: 0 };
+      catMap[tag].total += 1;
+      if (r.isCorrect) catMap[tag].correct += 1;
+    }
+    const categories = Object.entries(catMap)
+      .map(([tag, { correct, total }]) => ({ tag, correct, total, accuracy: Math.round((correct / total) * 100) }))
+      .sort((a, b) => b.accuracy - a.accuracy);
+
+    // Recent scores
+    const recentScores = scores.slice(0, 10).map(s => ({
+      quizId: s.quizId,
+      title: s.quiz.title,
+      tag: s.quiz.tag,
+      score: s.score,
+      total: s.quiz.questions.length,
+      completedAt: s.completedAt,
+    }));
+
+    res.json({ user, stats: { totalQuizzes, totalCorrect, totalAnswered, accuracy }, categories, recentScores });
+  } catch (err) {
+    console.error('Profile error:', err.message);
+    res.status(500).json({ message: 'Failed to load profile' });
+  }
+});
+
+router.patch('/profile', authenticate, async (req, res) => {
+  try {
+    const { bio } = req.body;
+    const user = await prisma.user.update({
+      where: { id: req.user.userId },
+      data: { bio: bio?.slice(0, 300) ?? undefined },
+      select: { id: true, name: true, email: true, pictureUrl: true, bio: true, totalPoints: true },
+    });
+    res.json({ user });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to update profile' });
+  }
+});
+
+router.post('/feedback', async (req, res) => {
+  try {
+    const { rating, message, name, email } = req.body;
+    if (!message?.trim()) return res.status(400).json({ message: 'Message is required' });
+
+    const userId = req.headers.authorization
+      ? (() => { try { const t = req.headers.authorization.split(' ')[1]; const d = require('jsonwebtoken').verify(t, process.env.JWT_SECRET); return d.userId > 0 ? d.userId : null; } catch { return null; } })()
+      : null;
+
+    await prisma.feedback.create({
+      data: { userId, name: name?.trim() || null, email: email?.trim() || null, rating: rating ? Number(rating) : null, message: message.trim() },
+    });
+    res.status(201).json({ message: 'Feedback submitted. Thank you!' });
+  } catch (err) {
+    console.error('Feedback error:', err.message);
+    res.status(500).json({ message: 'Failed to submit feedback' });
+  }
+});
+
 module.exports = router;

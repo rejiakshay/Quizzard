@@ -7,6 +7,7 @@ import QuizPage from './pages/QuizPage';
 import Leaderboard from './pages/Leaderboard';
 import AdminPanel from './pages/AdminPanel';
 import AdminQuizDetails from './pages/AdminQuizDetails';
+import ProfilePage from './pages/ProfilePage';
 import './index.css';
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/admin" element={<AdminPanel />} />
             <Route path="/admin/:id" element={<AdminQuizDetails />} />
+            <Route path="/profile" element={<ProfilePage />} />
           </Routes>
         </Router>
       </AuthProvider>

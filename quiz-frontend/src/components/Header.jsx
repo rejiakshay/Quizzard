@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { getLevel } from '../utils/levels';
 import api from '../utils/api';
@@ -7,6 +7,7 @@ import api from '../utils/api';
 export default function Header() {
   const { user, setUser } = useContext(AuthContext);
   const [showMenu, setShowMenu] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.removeItem('quizAppToken');
@@ -80,14 +81,18 @@ export default function Header() {
                 boxShadow: '0 12px 32px rgba(0,0,0,0.4)',
               }}>
                 <button
+                  onClick={() => { navigate('/profile'); setShowMenu(false); }}
+                  style={{ width: '100%', padding: '12px 16px', textAlign: 'left', background: 'none', border: 'none', color: 'var(--paper)', fontSize: 13, fontWeight: 500, cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                >
+                  My profile
+                </button>
+                <button
                   onClick={handleLogout}
-                  style={{
-                    width: '100%', padding: '12px 16px', textAlign: 'left',
-                    background: 'none', border: 'none', color: 'var(--paper)',
-                    fontSize: 13, fontWeight: 500, cursor: 'pointer',
-                  }}
-                  onMouseEnter={e => e.target.style.background = 'rgba(255,255,255,0.06)'}
-                  onMouseLeave={e => e.target.style.background = 'none'}
+                  style={{ width: '100%', padding: '12px 16px', textAlign: 'left', background: 'none', border: 'none', color: 'var(--paper)', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'none'}
                 >
                   Sign out
                 </button>
