@@ -152,9 +152,17 @@ export default function QuizPage() {
         const levelResult = applyQuizToGuest(data.score, data.total);
         setResult({ ...data, ...levelResult });
       } else {
+        // If backend didn't return level data (silent error in try/catch), compute locally as fallback
+        let resultData = { ...data };
+        if (!data.levelAfter && user?.totalPoints !== undefined) {
+          const earned = scoreQuiz(data.score, data.total);
+          const before = getLevel(user.totalPoints);
+          const newTotal = user.totalPoints + earned;
+          resultData = { ...data, pointsEarned: earned, totalPoints: newTotal, levelBefore: before, levelAfter: getLevel(newTotal) };
+        }
         // Update user totalPoints in context so Header reflects new level immediately
-        if (data.totalPoints) setUser(u => ({ ...u, totalPoints: data.totalPoints }));
-        setResult(data);
+        if (resultData.totalPoints) setUser(u => ({ ...u, totalPoints: resultData.totalPoints }));
+        setResult(resultData);
       }
     } catch {
       const score = Object.entries(answers).reduce((acc, [questionId, optionId]) => {
@@ -166,7 +174,12 @@ export default function QuizPage() {
         const levelResult = applyQuizToGuest(score, quiz.questions.length);
         setResult({ score, total: quiz.questions.length, details: [], ...levelResult });
       } else {
-        setResult({ score, total: quiz.questions.length, details: [] });
+        // Compute level locally on network error too
+        const earned = scoreQuiz(score, quiz.questions.length);
+        const before = getLevel(user.totalPoints);
+        const newTotal = user.totalPoints + earned;
+        setUser(u => ({ ...u, totalPoints: newTotal }));
+        setResult({ score, total: quiz.questions.length, details: [], pointsEarned: earned, totalPoints: newTotal, levelBefore: before, levelAfter: getLevel(newTotal) });
       }
     }
   };
