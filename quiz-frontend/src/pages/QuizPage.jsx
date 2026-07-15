@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useContext } from 'react';
 import api from '../utils/api';
 import { AuthContext } from '../context/AuthContext';
-import { getLevel, applyQuizToGuest, getAnimationTier, LEVELS_CONFIG, getGuestPlayer } from '../utils/levels';
+import { getLevel, applyQuizToGuest, getAnimationTier, LEVELS_CONFIG, getGuestPlayer, scoreQuiz } from '../utils/levels';
 
 const TIMER_SECONDS = 10;
 
@@ -59,6 +59,85 @@ function TierUpOverlay({ tierName, label }) {
           Continue
         </button>
       </div>
+    </div>
+  );
+}
+
+function ChallengeShare({ quizTitle, score, total, quizId }) {
+  const [copied, setCopied] = useState(false);
+  const quizUrl = `${window.location.origin}/quiz/${quizId}`;
+  const msg = `I just scored ${score}/${total} on "${quizTitle}" on Quizzard! 🧠 Think you can beat me? Try it:`;
+
+  const share = (platform) => {
+    const encoded = encodeURIComponent(msg);
+    const encodedUrl = encodeURIComponent(quizUrl);
+    const urls = {
+      whatsapp:  `https://wa.me/?text=${encoded}%20${encodedUrl}`,
+      telegram:  `https://t.me/share/url?url=${encodedUrl}&text=${encoded}`,
+      twitter:   `https://twitter.com/intent/tweet?text=${encoded}&url=${encodedUrl}`,
+      sms:       `sms:?body=${encoded}%20${quizUrl}`,
+    };
+    if (platform === 'instagram') {
+      navigator.clipboard.writeText(`${msg} ${quizUrl}`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } else {
+      window.open(urls[platform], '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const platforms = [
+    { key: 'whatsapp',  label: 'WhatsApp',  color: '#25D366', icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.119.553 4.111 1.52 5.843L0 24l6.335-1.493A11.954 11.954 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.371l-.36-.213-3.737.88.933-3.636-.235-.374A9.818 9.818 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+    )},
+    { key: 'telegram',  label: 'Telegram',  color: '#229ED9', icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+    )},
+    { key: 'twitter',   label: 'X / Twitter', color: '#000000', icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+    )},
+    { key: 'instagram', label: copied ? 'Copied!' : 'Instagram', color: '#E1306C', icon: copied
+      ? <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      : <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+    },
+    { key: 'sms', label: 'SMS', color: '#34C759', icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
+    )},
+  ];
+
+  return (
+    <div style={{ margin: '0 0 24px', padding: '20px', background: '#f0ece3', border: '1.5px dashed var(--paper-dim)', borderRadius: 10 }}>
+      <p className="font-mono" style={{ fontSize: 11, color: 'var(--pink)', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 8 }}>
+        Challenge friends
+      </p>
+      <p style={{ fontSize: 13, color: 'var(--slate)', marginBottom: 14 }}>
+        Think your friends can beat your score? Send them the quiz link.
+      </p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
+        {platforms.map(({ key, label, color, icon }) => (
+          <button
+            key={key}
+            onClick={() => share(key)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 7,
+              background: color, color: '#fff',
+              border: 'none', borderRadius: 7, padding: '9px 16px',
+              fontWeight: 600, fontSize: 13, cursor: 'pointer',
+              transition: 'opacity 0.15s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+          >
+            {icon}
+            {label}
+          </button>
+        ))}
+      </div>
+      {copied && (
+        <p style={{ fontSize: 12, color: 'var(--green)', marginTop: 10, fontWeight: 600 }}>
+          ✓ Link copied! Paste it on Instagram.
+        </p>
+      )}
     </div>
   );
 }
@@ -290,6 +369,9 @@ export default function QuizPage() {
             <p style={{ color: '#6b6f7d', fontSize: 14, marginBottom: 24 }}>
               {isGreat ? 'Excellent work! You really know your stuff.' : 'Good effort! Keep practising to improve.'}
             </p>
+
+            {/* Challenge friends */}
+            <ChallengeShare quizTitle={quiz.title} score={result.score} total={result.total} quizId={id} />
 
             <button
               onClick={() => navigate('/')}
