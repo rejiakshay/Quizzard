@@ -209,7 +209,7 @@ export default function Home() {
       )}
 
       {/* ── Hero ── */}
-      <section style={{ position: 'relative', padding: '60px 64px 100px', display: 'grid', gridTemplateColumns: '1.05fr 0.95fr', gap: 40, alignItems: 'center', minHeight: 620, maxWidth: 1200, margin: '0 auto' }}>
+      <section className="hero-grid page-pad" style={{ position: 'relative', padding: '60px 64px 100px', minHeight: 620, maxWidth: 1200, margin: '0 auto' }}>
         {/* Background glyphs */}
         <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
           {[
@@ -299,16 +299,16 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Right: animated card */}
-        <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'center', alignItems: 'center', paddingTop: 32 }}>
+        {/* Right: animated card — hidden on mobile */}
+        <div className="hero-card-wrap" style={{ position: 'relative', zIndex: 2 }}>
           <AnimatedCard />
         </div>
       </section>
 
       {/* ── Categories ── */}
-      <section id="categories" style={{ background: 'var(--paper)', color: 'var(--ink)', padding: '70px 64px 90px' }}>
+      <section id="categories" className="categories-section" style={{ background: 'var(--paper)', color: 'var(--ink)', padding: '70px 64px 90px' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 36 }}>
+          <div className="categories-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 36 }}>
             <h2 className="font-display" style={{ fontSize: 32, letterSpacing: '-1px' }}>Pick your battlefield</h2>
             <p style={{ color: '#6b6f7d', fontSize: 14, maxWidth: 280, textAlign: 'right' }}>
               {categoryCount} categories, {quizzes.length} quiz sets, one leaderboard.
@@ -320,7 +320,7 @@ export default function Home() {
           ) : tags.length === 0 ? (
             <p style={{ color: 'var(--slate)', fontSize: 15 }}>No quizzes available yet.</p>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 18 }}>
+            <div className="cat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 18 }}>
               {tags.map((tag) => {
                 const meta = tagMeta(tag);
                 const count = tagGroups[tag].length;
@@ -360,7 +360,7 @@ export default function Home() {
               <h3 className="font-display" style={{ fontSize: 22, marginBottom: 24, letterSpacing: '-0.5px' }}>
                 {tagMeta(selectedTag).emoji} {selectedTag}
               </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
+              <div className="quiz-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
                 {activeQuizzes.map((quiz) => {
                   const played = playedQuizIds.includes(quiz.id);
                   const diff = quiz.difficulty ? DIFF_STYLE[quiz.difficulty] : null;

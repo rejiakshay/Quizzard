@@ -4,6 +4,8 @@
 :root {
   --ink: #12172B;
   --ink-2: #1B2140;
+  --surface: #1E2645;
+  --surface-border: rgba(255,255,255,0.08);
   --pink: #FF3B69;
   --pink-dim: #C22B4F;
   --yellow: #FFC53D;
@@ -40,3 +42,40 @@ button { font: inherit; }
 .animate-fade-in { animation: fade-in 0.25s ease forwards; }
 .card-fade { transition: opacity 0.25s ease; }
 .card-fade.out { opacity: 0; }
+
+/* ── Responsive layout helpers ── */
+.page-pad   { padding-left: 64px; padding-right: 64px; }
+.hero-grid  { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 40px; align-items: center; }
+.nav-links  { display: flex; }
+.hero-card-wrap { display: flex; justify-content: center; align-items: center; padding-top: 32px; }
+
+@media (max-width: 768px) {
+  html { overflow-x: hidden; }
+  body { overflow-x: hidden; }
+
+  /* Header */
+  .header-inner { padding: 14px 20px !important; }
+  .nav-links    { display: none !important; }
+
+  /* Hero */
+  .page-pad  { padding-left: 20px !important; padding-right: 20px !important; }
+  .hero-grid { grid-template-columns: 1fr !important; gap: 32px !important; padding: 40px 20px 60px !important; min-height: auto !important; }
+  .hero-card-wrap { display: none !important; }
+
+  /* Categories section */
+  .categories-section { padding: 48px 20px 64px !important; }
+  .categories-header  { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
+  .categories-header p { text-align: left !important; max-width: 100% !important; }
+
+  /* Quiz card grid */
+  .quiz-grid { grid-template-columns: 1fr !important; }
+  .cat-grid  { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important; }
+
+  /* Quiz page / profile page inner */
+  .quiz-inner   { padding: 20px 16px !important; }
+  .quiz-card    { padding: 18px 16px !important; }
+
+  /* Stat boxes */
+  .stat-row { flex-direction: row !important; flex-wrap: wrap !important; }
+  .stat-box { min-width: calc(50% - 6px) !important; }
+}

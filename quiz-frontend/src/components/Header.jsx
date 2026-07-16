@@ -17,7 +17,7 @@ export default function Header() {
 
   return (
     <header style={{ background: 'var(--ink)', borderBottom: '1px solid rgba(255,255,255,0.06)', position: 'sticky', top: 0, zIndex: 50 }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '20px 48px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div className="header-inner" style={{ maxWidth: 1200, margin: '0 auto', padding: '20px 48px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 
         {/* Logo */}
         <NavLink to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
@@ -33,8 +33,8 @@ export default function Header() {
           </span>
         </NavLink>
 
-        {/* Nav links */}
-        <nav style={{ display: 'flex', gap: 32 }}>
+        {/* Nav links — hidden on mobile */}
+        <nav className="nav-links" style={{ gap: 32 }}>
           {[{ to: '/', label: 'Home' }, { to: '/leaderboard', label: 'Leaderboards' }, { to: '/admin', label: 'Admin' }].map(({ to, label }) => (
             <NavLink
               key={to}

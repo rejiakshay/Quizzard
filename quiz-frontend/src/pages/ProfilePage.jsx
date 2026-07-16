@@ -7,14 +7,14 @@ import api from '../utils/api';
 const wrap = { minHeight: '100vh', background: 'var(--ink)', padding: '40px 16px 80px' };
 const inner = { maxWidth: 720, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 20 };
 const card = {
-  background: 'var(--paper)', color: 'var(--ink)',
+  background: 'var(--surface)', color: 'var(--paper)',
   borderRadius: 10, padding: '28px 32px',
-  border: '1.5px solid var(--paper-dim)',
-  boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
+  border: '1.5px solid var(--surface-border)',
+  boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
 };
 const label = { fontSize: 11, fontFamily: 'JetBrains Mono, monospace', fontWeight: 700, letterSpacing: '0.8px', textTransform: 'uppercase', color: 'var(--slate)', marginBottom: 6 };
 
-const STAR_COLORS = { active: '#FFC53D', inactive: '#D8D4C8' };
+const STAR_COLORS = { active: '#FFC53D', inactive: 'rgba(255,255,255,0.15)' };
 
 function Stars({ value, onChange }) {
   const [hover, setHover] = useState(0);
@@ -134,7 +134,7 @@ export default function ProfilePage() {
               )
             }
             <div style={{ flex: 1 }}>
-              <h1 className="font-display" style={{ fontSize: 26, color: 'var(--ink)', marginBottom: 4 }}>{user.name}</h1>
+              <h1 className="font-display" style={{ fontSize: 26, color: 'var(--paper)', marginBottom: 4 }}>{user.name}</h1>
               <p style={{ fontSize: 13, color: 'var(--slate)', marginBottom: 8 }}>{user.email}</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                 <span style={{ background: tierColor, color: '#fff', fontSize: 11, fontFamily: 'JetBrains Mono, monospace', fontWeight: 700, padding: '4px 10px', borderRadius: 4 }}>
@@ -150,7 +150,7 @@ export default function ProfilePage() {
                   <span style={{ fontSize: 10, color: 'var(--slate)' }}>Progress to next sub-level</span>
                   <span style={{ fontSize: 10, color: 'var(--slate)', fontFamily: 'JetBrains Mono, monospace' }}>{level.progressInSub}/{LEVELS_CONFIG.SUBLEVEL_SIZE}</span>
                 </div>
-                <div style={{ height: 5, borderRadius: 99, background: 'var(--paper-dim)', overflow: 'hidden' }}>
+                <div style={{ height: 5, borderRadius: 99, background: 'rgba(255,255,255,0.1)', overflow: 'hidden' }}>
                   <div style={{ height: '100%', borderRadius: 99, background: tierColor, width: `${(level.progressInSub / LEVELS_CONFIG.SUBLEVEL_SIZE) * 100}%`, transition: 'width 0.8s ease' }} />
                 </div>
               </div>
@@ -176,17 +176,17 @@ export default function ProfilePage() {
                 maxLength={300}
                 rows={3}
                 placeholder="Tell people a little about yourself…"
-                style={{ width: '100%', borderRadius: 7, border: '1.5px solid var(--paper-dim)', padding: '10px 14px', fontSize: 14, fontFamily: 'Inter, sans-serif', resize: 'vertical', outline: 'none', boxSizing: 'border-box', color: 'var(--ink)', background: '#faf8f4' }}
+                style={{ width: '100%', borderRadius: 7, border: '1.5px solid var(--surface-border)', padding: '10px 14px', fontSize: 14, fontFamily: 'Inter, sans-serif', resize: 'vertical', outline: 'none', boxSizing: 'border-box', color: 'var(--paper)', background: 'rgba(0,0,0,0.25)' }}
               />
               <div style={{ display: 'flex', gap: 8, marginTop: 10, justifyContent: 'flex-end' }}>
-                <button onClick={() => { setBioEditing(false); setBio(profile?.user?.bio || ''); }} style={{ fontSize: 13, padding: '8px 16px', borderRadius: 6, border: '1.5px solid var(--paper-dim)', background: 'none', cursor: 'pointer', color: 'var(--slate)', fontWeight: 600 }}>Cancel</button>
-                <button onClick={saveBio} disabled={bioSaving} style={{ fontSize: 13, padding: '8px 16px', borderRadius: 6, border: 'none', background: 'var(--ink)', color: 'var(--paper)', cursor: 'pointer', fontWeight: 700, opacity: bioSaving ? 0.6 : 1 }}>
+                <button onClick={() => { setBioEditing(false); setBio(profile?.user?.bio || ''); }} style={{ fontSize: 13, padding: '8px 16px', borderRadius: 6, border: '1.5px solid var(--surface-border)', background: 'none', cursor: 'pointer', color: 'var(--slate)', fontWeight: 600 }}>Cancel</button>
+                <button onClick={saveBio} disabled={bioSaving} style={{ fontSize: 13, padding: '8px 16px', borderRadius: 6, border: 'none', background: 'var(--pink)', color: '#fff', cursor: 'pointer', fontWeight: 700, opacity: bioSaving ? 0.6 : 1 }}>
                   {bioSaving ? 'Saving…' : 'Save'}
                 </button>
               </div>
             </div>
           ) : (
-            <p style={{ fontSize: 14, color: bio ? 'var(--ink)' : 'var(--slate)', fontStyle: bio ? 'normal' : 'italic', lineHeight: 1.6 }}>
+            <p style={{ fontSize: 14, color: bio ? 'var(--paper)' : 'var(--slate)', fontStyle: bio ? 'normal' : 'italic', lineHeight: 1.6 }}>
               {bio || 'No bio yet. Click "Add bio" to introduce yourself.'}
             </p>
           )}
@@ -210,12 +210,12 @@ export default function ProfilePage() {
                 {topCategories.map(cat => (
                   <div key={cat.tag}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>{cat.tag}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--paper)' }}>{cat.tag}</span>
                       <span style={{ fontSize: 12, fontFamily: 'JetBrains Mono, monospace', color: 'var(--slate)' }}>
                         {cat.correct}/{cat.total} · {cat.accuracy}%
                       </span>
                     </div>
-                    <div style={{ height: 6, borderRadius: 99, background: 'var(--paper-dim)', overflow: 'hidden' }}>
+                    <div style={{ height: 6, borderRadius: 99, background: 'rgba(255,255,255,0.1)', overflow: 'hidden' }}>
                       <div style={{ height: '100%', borderRadius: 99, background: cat.accuracy >= 80 ? 'var(--green)' : cat.accuracy >= 50 ? 'var(--yellow)' : 'var(--pink)', width: `${cat.accuracy}%`, transition: 'width 0.6s ease' }} />
                     </div>
                   </div>
@@ -232,9 +232,9 @@ export default function ProfilePage() {
                 {recentScores.map((s, i) => {
                   const pct = Math.round((s.score / s.total) * 100);
                   return (
-                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: '#f8f6f1', borderRadius: 7, border: '1px solid var(--paper-dim)' }}>
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: 'rgba(0,0,0,0.2)', borderRadius: 7, border: '1px solid var(--surface-border)' }}>
                       <div>
-                        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)', marginBottom: 2 }}>{s.title}</p>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--paper)', marginBottom: 2 }}>{s.title}</p>
                         {s.tag && <p style={{ fontSize: 11, color: 'var(--slate)' }}>{s.tag}</p>}
                       </div>
                       <span className="font-mono" style={{ fontSize: 14, fontWeight: 700, color: pct >= 70 ? 'var(--green)' : pct >= 50 ? 'var(--yellow)' : 'var(--pink)' }}>
@@ -264,7 +264,7 @@ export default function ProfilePage() {
           {fbDone ? (
             <div style={{ textAlign: 'center', padding: '24px 0' }}>
               <p style={{ fontSize: 32, marginBottom: 8 }}>🙌</p>
-              <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink)', marginBottom: 4 }}>Thank you!</p>
+              <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--paper)', marginBottom: 4 }}>Thank you!</p>
               <p style={{ fontSize: 13, color: 'var(--slate)' }}>Your feedback helps make Quizzard better.</p>
               <button onClick={() => setFbDone(false)} style={{ marginTop: 16, fontSize: 12, color: 'var(--pink)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Submit another</button>
             </div>
@@ -321,7 +321,7 @@ export default function ProfilePage() {
 }
 
 const inputStyle = {
-  width: '100%', borderRadius: 7, border: '1.5px solid var(--paper-dim)',
+  width: '100%', borderRadius: 7, border: '1.5px solid var(--surface-border)',
   padding: '10px 14px', fontSize: 14, outline: 'none',
-  boxSizing: 'border-box', color: 'var(--ink)', background: '#faf8f4',
+  boxSizing: 'border-box', color: 'var(--paper)', background: 'rgba(0,0,0,0.25)',
 };

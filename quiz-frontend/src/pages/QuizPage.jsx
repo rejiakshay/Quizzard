@@ -143,10 +143,10 @@ function ChallengeShare({ quizTitle, score, total, quizId }) {
 }
 
 const card = {
-  background: 'var(--paper)', color: 'var(--ink)',
+  background: 'var(--surface)', color: 'var(--paper)',
   borderRadius: 10, padding: '24px 28px',
-  border: '1.5px solid var(--paper-dim)',
-  boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
+  border: '1.5px solid var(--surface-border)',
+  boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
 };
 
 export default function QuizPage() {
@@ -317,7 +317,7 @@ export default function QuizPage() {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 {hasHistory && (
-                  <span className="font-mono" style={{ fontSize: 13, fontWeight: 700, color: 'var(--slate)', background: '#f0ece3', padding: '6px 12px', borderRadius: 6 }}>
+                  <span className="font-mono" style={{ fontSize: 13, fontWeight: 700, color: 'var(--yellow)', background: 'rgba(255,197,61,0.1)', border: '1px solid rgba(255,197,61,0.25)', padding: '6px 12px', borderRadius: 6 }}>
                     Your score: {correctCount}/{quiz.questions.length}
                   </span>
                 )}
@@ -365,9 +365,9 @@ export default function QuizPage() {
                     const wasSelected = past?.selectedOptionId === option.id;
                     const wasWrong = wasSelected && !isCorrect;
 
-                    let bg = '#f8f6f1', border = '#D8D4C8', color = '#6b6f7d';
-                    if (isCorrect) { bg = 'rgba(46,204,113,0.1)'; border = 'var(--green)'; color = '#1b7a3d'; }
-                    if (wasWrong)  { bg = 'rgba(255,59,105,0.08)'; border = 'var(--pink)'; color = '#b3325c'; }
+                    let bg = 'rgba(255,255,255,0.04)', border = 'rgba(255,255,255,0.08)', color = 'var(--slate)';
+                    if (isCorrect) { bg = 'rgba(46,204,113,0.15)'; border = 'var(--green)'; color = '#5eeaa0'; }
+                    if (wasWrong)  { bg = 'rgba(255,59,105,0.15)'; border = 'var(--pink)'; color = '#ff8aaa'; }
 
                     return (
                       <div key={option.id} style={{
@@ -388,9 +388,9 @@ export default function QuizPage() {
                 </div>
 
                 {question.funFact && (
-                  <div style={{ marginTop: 14, background: 'rgba(255,197,61,0.1)', border: '1px solid rgba(255,197,61,0.4)', borderRadius: 7, padding: '10px 14px' }}>
-                    <p style={{ fontSize: 12, color: '#8a6200', lineHeight: 1.5 }}>
-                      <span style={{ fontWeight: 700 }}>💡 Fun fact: </span>{question.funFact}
+                  <div style={{ marginTop: 14, background: 'rgba(255,197,61,0.08)', border: '1px solid rgba(255,197,61,0.25)', borderRadius: 7, padding: '10px 14px' }}>
+                    <p style={{ fontSize: 12, color: 'var(--slate)', lineHeight: 1.5 }}>
+                      <span style={{ fontWeight: 700, color: 'var(--yellow)' }}>💡 Fun fact: </span>{question.funFact}
                     </p>
                   </div>
                 )}
@@ -432,11 +432,11 @@ export default function QuizPage() {
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: isGreat ? 'var(--green)' : 'var(--pink)' }} />
 
             <p style={{ fontSize: 52, marginBottom: 10 }}>{isGreat ? '🎉' : '💪'}</p>
-            <h2 className="font-display" style={{ fontSize: 24, color: 'var(--ink)', marginBottom: 4 }}>{quiz.title}</h2>
+            <h2 className="font-display" style={{ fontSize: 24, color: 'var(--paper)', marginBottom: 4 }}>{quiz.title}</h2>
             <p style={{ color: 'var(--slate)', fontSize: 13, marginBottom: 24 }}>Quiz complete!</p>
 
             {/* Score */}
-            <div style={{ display: 'inline-block', background: 'var(--ink)', borderRadius: 10, padding: '18px 36px', marginBottom: 20 }}>
+            <div style={{ display: 'inline-block', background: 'rgba(0,0,0,0.3)', borderRadius: 10, padding: '18px 36px', marginBottom: 20 }}>
               <p className="font-mono" style={{ fontSize: 48, fontWeight: 700, color: isGreat ? 'var(--green)' : 'var(--pink)' }}>
                 {result.score}<span style={{ fontSize: 22, color: 'var(--slate)' }}>/{result.total}</span>
               </p>
@@ -449,7 +449,7 @@ export default function QuizPage() {
                 <span style={{
                   display: 'inline-block',
                   background: 'rgba(46,204,113,0.12)', border: '1px solid var(--green)',
-                  color: '#1b7a3d', borderRadius: 6, padding: '6px 16px',
+                  color: 'var(--green)', borderRadius: 6, padding: '6px 16px',
                   fontFamily: 'JetBrains Mono, monospace', fontWeight: 700, fontSize: 15,
                 }}>
                   +{result.pointsEarned} pts
@@ -460,15 +460,15 @@ export default function QuizPage() {
 
             {/* Level info */}
             {levelAfter && (
-              <div style={{ background: '#f8f6f1', border: '1.5px solid var(--paper-dim)', borderRadius: 8, padding: '16px 20px', marginBottom: 20, textAlign: 'left' }}>
+              <div style={{ background: 'rgba(0,0,0,0.25)', border: '1.5px solid var(--surface-border)', borderRadius: 8, padding: '16px 20px', marginBottom: 20, textAlign: 'left' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                   <div>
                     <p style={{ fontSize: 11, color: 'var(--slate)', fontFamily: 'JetBrains Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 2 }}>Current level</p>
-                    <p className="font-display" style={{ fontSize: 18, color: 'var(--ink)' }}>{levelAfter.label}</p>
+                    <p className="font-display" style={{ fontSize: 18, color: 'var(--yellow)' }}>{levelAfter.label}</p>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <p style={{ fontSize: 11, color: 'var(--slate)', fontFamily: 'JetBrains Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 2 }}>Total points</p>
-                    <p className="font-mono" style={{ fontSize: 18, fontWeight: 700, color: 'var(--ink)' }}>{result.totalPoints?.toLocaleString() ?? '—'}</p>
+                    <p className="font-mono" style={{ fontSize: 18, fontWeight: 700, color: 'var(--paper)' }}>{result.totalPoints?.toLocaleString() ?? '—'}</p>
                   </div>
                 </div>
                 {/* Sub-level progress bar */}
@@ -477,7 +477,7 @@ export default function QuizPage() {
                     <span style={{ fontSize: 11, color: 'var(--slate)' }}>Progress to next level</span>
                     <span style={{ fontSize: 11, color: 'var(--slate)', fontFamily: 'JetBrains Mono, monospace' }}>{levelAfter.progressInSub}/{LEVELS_CONFIG.SUBLEVEL_SIZE}</span>
                   </div>
-                  <div style={{ height: 6, borderRadius: 99, background: '#D8D4C8', overflow: 'hidden' }}>
+                  <div style={{ height: 6, borderRadius: 99, background: 'rgba(255,255,255,0.1)', overflow: 'hidden' }}>
                     <div style={{
                       height: '100%', borderRadius: 99,
                       background: 'linear-gradient(90deg, var(--pink), #ff6b8a)',
@@ -489,7 +489,7 @@ export default function QuizPage() {
               </div>
             )}
 
-            <p style={{ color: '#6b6f7d', fontSize: 14, marginBottom: 24 }}>
+            <p style={{ color: 'var(--slate)', fontSize: 14, marginBottom: 24 }}>
               {isGreat ? 'Excellent work! You really know your stuff.' : 'Good effort! Keep practising to improve.'}
             </p>
 
@@ -519,15 +519,15 @@ export default function QuizPage() {
         {/* Header card */}
         <div style={card}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <h2 style={{ fontWeight: 700, fontSize: 17, color: 'var(--ink)' }}>{quiz.title}</h2>
+            <h2 style={{ fontWeight: 700, fontSize: 17, color: 'var(--paper)' }}>{quiz.title}</h2>
             <span className="font-mono" style={{ fontSize: 12, fontWeight: 700, color: 'var(--slate)', background: '#eee', padding: '4px 10px', borderRadius: 20 }}>
               {currentQuestionIndex + 1} / {quiz.questions.length}
             </span>
           </div>
 
           {/* Progress bar */}
-          <div style={{ height: 4, borderRadius: 99, background: '#D8D4C8', overflow: 'hidden', marginBottom: 14 }}>
-            <div style={{ height: '100%', borderRadius: 99, background: 'var(--ink)', width: `${progressPct}%`, transition: 'width 0.4s ease' }} />
+          <div style={{ height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.1)', overflow: 'hidden', marginBottom: 14 }}>
+            <div style={{ height: '100%', borderRadius: 99, background: 'var(--pink)', width: `${progressPct}%`, transition: 'width 0.4s ease' }} />
           </div>
 
           {/* Timer */}
@@ -537,7 +537,7 @@ export default function QuizPage() {
                 <span className="font-mono" style={{ fontSize: 11, color: 'var(--slate)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Time left</span>
                 <span className="font-mono" style={{ fontSize: 13, fontWeight: 700, color: timerColor }}>{Math.max(0, timeLeftDisplay)}s</span>
               </div>
-              <div style={{ height: 4, borderRadius: 99, background: '#D8D4C8', overflow: 'hidden' }}>
+              <div style={{ height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.1)', overflow: 'hidden' }}>
                 <div style={{ height: '100%', borderRadius: 99, backgroundColor: timerColor, width: `${timerPct}%`, transition: 'background-color 0.5s ease' }} />
               </div>
             </div>
@@ -552,7 +552,7 @@ export default function QuizPage() {
           <p className="font-mono" style={{ fontSize: 11, color: 'var(--pink)', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 10 }}>
             Question {currentQuestionIndex + 1}
           </p>
-          <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--ink)', lineHeight: 1.4, marginBottom: 20 }}>{question.questionText}</h3>
+          <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--paper)', lineHeight: 1.4, marginBottom: 20 }}>{question.questionText}</h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {question.options.map((option) => {
@@ -560,14 +560,14 @@ export default function QuizPage() {
               const showCorrect = currentQuestionResult && option.id === currentQuestionResult.correctOptionId;
               const isWrongSelected = currentQuestionResult && isSelected && !option.isCorrect;
 
-              let bg = '#fff', border = '#D8D4C8', color = 'var(--ink)';
+              let bg = 'rgba(255,255,255,0.05)', border = 'rgba(255,255,255,0.1)', color = 'var(--paper)';
               if (currentQuestionResult) {
-                if (isSelected && option.isCorrect) { bg = 'rgba(46,204,113,0.12)'; border = 'var(--green)'; color = '#1b7a3d'; }
-                else if (isWrongSelected)            { bg = 'rgba(255,59,105,0.08)'; border = 'var(--pink)'; color = '#b3325c'; }
-                else if (showCorrect)                { bg = 'rgba(46,204,113,0.08)'; border = 'var(--green)'; color = '#1b7a3d'; }
-                else                                 { bg = '#f8f8f6'; border = '#e8e4dc'; color = '#aaa'; }
+                if (isSelected && option.isCorrect) { bg = 'rgba(46,204,113,0.18)'; border = 'var(--green)'; color = '#5eeaa0'; }
+                else if (isWrongSelected)            { bg = 'rgba(255,59,105,0.15)'; border = 'var(--pink)'; color = '#ff8aaa'; }
+                else if (showCorrect)                { bg = 'rgba(46,204,113,0.12)'; border = 'var(--green)'; color = '#5eeaa0'; }
+                else                                 { bg = 'rgba(255,255,255,0.03)'; border = 'rgba(255,255,255,0.06)'; color = 'var(--slate)'; }
               } else if (isSelected) {
-                bg = 'var(--ink)'; border = 'var(--ink)'; color = 'var(--paper)';
+                bg = 'var(--pink)'; border = 'var(--pink)'; color = '#fff';
               }
 
               return (
@@ -597,7 +597,7 @@ export default function QuizPage() {
               background: currentQuestionResult.isCorrect ? 'rgba(46,204,113,0.1)' : 'rgba(255,59,105,0.08)',
               border: `1px solid ${currentQuestionResult.isCorrect ? 'var(--green)' : 'var(--pink)'}`,
             }}>
-              <p style={{ fontWeight: 700, fontSize: 14, color: currentQuestionResult.isCorrect ? '#1b7a3d' : '#b3325c' }}>
+              <p style={{ fontWeight: 700, fontSize: 14, color: currentQuestionResult.isCorrect ? 'var(--green)' : 'var(--pink)' }}>
                 {currentQuestionResult.timedOut
                   ? `⏱️ Time's up! Answer: ${currentQuestionResult.correctOptionText}`
                   : currentQuestionResult.isCorrect
@@ -605,8 +605,8 @@ export default function QuizPage() {
                     : `❌ Wrong! Answer: ${currentQuestionResult.correctOptionText}`}
               </p>
               {question.funFact && (
-                <p style={{ marginTop: 8, fontSize: 13, color: '#5a5d70', lineHeight: 1.5 }}>
-                  <b style={{ color: 'var(--ink)' }}>Fun fact:</b> {question.funFact}
+                <p style={{ marginTop: 8, fontSize: 13, color: 'var(--slate)', lineHeight: 1.5 }}>
+                  <b style={{ color: 'var(--yellow)' }}>Fun fact:</b> {question.funFact}
                 </p>
               )}
             </div>
@@ -619,8 +619,8 @@ export default function QuizPage() {
                 onClick={handleNext}
                 disabled={!currentQuestionResult}
                 style={{
-                  background: currentQuestionResult ? 'var(--pink)' : '#e0ddd6',
-                  color: currentQuestionResult ? 'var(--ink)' : '#aaa',
+                  background: currentQuestionResult ? 'var(--pink)' : 'rgba(255,255,255,0.08)',
+                  color: currentQuestionResult ? '#fff' : 'var(--slate)',
                   border: 'none', borderRadius: 6,
                   padding: '11px 24px', fontWeight: 700, fontSize: 14,
                   cursor: currentQuestionResult ? 'pointer' : 'not-allowed',
