@@ -502,6 +502,34 @@ export default function QuizPage() {
             {/* Challenge friends */}
             <ChallengeShare quizTitle={quiz.title} score={result.score} total={result.total} quizId={id} />
 
+            {/* Guest sign-in prompt */}
+            {!user && (
+              <div style={{
+                margin: '8px 0 16px',
+                background: 'rgba(255,197,61,0.08)',
+                border: '1.5px solid rgba(255,197,61,0.3)',
+                borderRadius: 10, padding: '18px 20px',
+                textAlign: 'center',
+              }}>
+                <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--yellow)', marginBottom: 6 }}>
+                  🏆 Want to appear on the leaderboard?
+                </p>
+                <p style={{ fontSize: 13, color: 'var(--slate)', marginBottom: 16, lineHeight: 1.5 }}>
+                  Sign in to save your score, track your progress, and compete with others. Your score right now: <strong style={{ color: 'var(--paper)' }}>{result.score}/{result.total}</strong>
+                </p>
+                <button
+                  onClick={() => window.dispatchEvent(new CustomEvent('quizzard:openLogin'))}
+                  style={{
+                    background: 'var(--yellow)', color: 'var(--ink)',
+                    border: 'none', borderRadius: 6, padding: '11px 28px',
+                    fontWeight: 700, fontSize: 14, cursor: 'pointer',
+                  }}
+                >
+                  Sign in to save score →
+                </button>
+              </div>
+            )}
+
             <button
               onClick={() => navigate('/')}
               style={{ background: 'var(--ink)', color: 'var(--paper)', border: 'none', borderRadius: 6, padding: '12px 28px', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
