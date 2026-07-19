@@ -49,6 +49,7 @@ export default function ProfilePage() {
 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [bio, setBio] = useState('');
   const [bioEditing, setBioEditing] = useState(false);
   const [bioSaving, setBioSaving] = useState(false);
@@ -63,6 +64,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!user) { navigate('/'); return; }
+    setLoading(true);
     api.get('/auth/profile')
       .then(r => {
         setProfile(r.data);
@@ -72,7 +74,7 @@ export default function ProfilePage() {
       })
       .catch(() => setProfile(null))
       .finally(() => setLoading(false));
-  }, [user, navigate]);
+  }, [user, navigate, refreshKey]);
 
   const saveBio = async () => {
     setBioSaving(true);
@@ -194,7 +196,13 @@ export default function ProfilePage() {
 
         {/* ── Progress stats ── */}
         <div style={card}>
-          <p style={{ ...label, marginBottom: 18 }}>Progress</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+            <p style={label}>Progress</p>
+            <button
+              onClick={() => setRefreshKey(k => k + 1)}
+              style={{ fontSize: 11, color: 'var(--slate)', background: 'none', border: '1px solid var(--surface-border)', borderRadius: 4, padding: '4px 10px', cursor: 'pointer', fontFamily: 'JetBrains Mono, monospace' }}
+            >↻ Refresh</button>
+          </div>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 20 }}>
             <StatBox value={stats.totalQuizzes ?? 0} label="Quizzes" sub="completed" />
             <StatBox value={stats.totalCorrect ?? 0} label="Correct" sub="answers" />

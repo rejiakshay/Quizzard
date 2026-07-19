@@ -35,7 +35,7 @@ export default function Header() {
 
         {/* Nav links — hidden on mobile */}
         <nav className="nav-links" style={{ gap: 32 }}>
-          {[{ to: '/', label: 'Home' }, { to: '/leaderboard', label: 'Leaderboards' }, { to: '/admin', label: 'Admin' }].map(({ to, label }) => (
+          {[{ to: '/', label: 'Home' }, { to: '/leaderboard', label: 'Leaderboards' }].map(({ to, label }) => (
             <NavLink
               key={to}
               to={to}

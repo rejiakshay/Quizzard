@@ -306,11 +306,11 @@ export default function Home() {
       </section>
 
       {/* ── Categories ── */}
-      <section id="categories" className="categories-section" style={{ background: 'var(--paper)', color: 'var(--ink)', padding: '70px 64px 90px' }}>
+      <section id="categories" className="categories-section" style={{ background: 'var(--ink-2)', borderTop: '1px solid rgba(255,255,255,0.06)', padding: '70px 64px 90px' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           <div className="categories-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 36 }}>
-            <h2 className="font-display" style={{ fontSize: 32, letterSpacing: '-1px' }}>Pick your battlefield</h2>
-            <p style={{ color: '#6b6f7d', fontSize: 14, maxWidth: 280, textAlign: 'right' }}>
+            <h2 className="font-display" style={{ fontSize: 32, letterSpacing: '-1px', color: 'var(--paper)' }}>Pick your battlefield</h2>
+            <p style={{ color: 'var(--slate)', fontSize: 14, maxWidth: 280, textAlign: 'right' }}>
               {categoryCount} categories, {quizzes.length} quiz sets, one leaderboard.
             </p>
           </div>
@@ -330,22 +330,22 @@ export default function Home() {
                     key={tag}
                     onClick={() => setSelectedTag(isActive ? null : tag)}
                     style={{
-                      background: isActive ? 'var(--ink)' : '#fff',
-                      border: `1.5px solid ${isActive ? 'var(--ink)' : '#D8D4C8'}`,
+                      background: isActive ? 'var(--pink)' : 'var(--surface)',
+                      border: `1.5px solid ${isActive ? 'var(--pink)' : 'var(--surface-border)'}`,
                       borderRadius: 8, padding: '22px 20px',
                       cursor: 'pointer', textAlign: 'left',
                       transition: 'transform 0.15s, box-shadow 0.15s, border-color 0.15s',
-                      color: isActive ? 'var(--paper)' : 'var(--ink)',
+                      color: 'var(--paper)',
                     }}
-                    onMouseEnter={e => { if (!isActive) { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 16px 30px rgba(0,0,0,0.1)'; e.currentTarget.style.borderColor = 'var(--ink)'; } }}
-                    onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; e.currentTarget.style.borderColor = isActive ? 'var(--ink)' : '#D8D4C8'; }}
+                    onMouseEnter={e => { if (!isActive) { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 16px 30px rgba(0,0,0,0.3)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; } }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; e.currentTarget.style.borderColor = isActive ? 'var(--pink)' : 'var(--surface-border)'; }}
                   >
-                    <div style={{ width: 44, height: 44, borderRadius: 6, background: isActive ? 'rgba(255,255,255,0.1)' : meta.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, marginBottom: 14 }}>
+                    <div style={{ width: 44, height: 44, borderRadius: 6, background: isActive ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, marginBottom: 14 }}>
                       {meta.emoji}
                     </div>
-                    <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>{tag}</div>
-                    <div className="font-mono" style={{ fontSize: 12, color: isActive ? 'rgba(245,242,234,0.6)' : '#8a8d99' }}>{count} set{count !== 1 ? 's' : ''}</div>
-                    <div style={{ marginTop: 12, fontSize: 11, fontWeight: 700, letterSpacing: '0.4px', textTransform: 'uppercase', color: isActive ? 'var(--yellow)' : '#6b6f7d' }}>
+                    <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4, color: 'var(--paper)' }}>{tag}</div>
+                    <div className="font-mono" style={{ fontSize: 12, color: isActive ? 'rgba(245,242,234,0.75)' : 'var(--slate)' }}>{count} set{count !== 1 ? 's' : ''}</div>
+                    <div style={{ marginTop: 12, fontSize: 11, fontWeight: 700, letterSpacing: '0.4px', textTransform: 'uppercase', color: isActive ? '#fff' : 'var(--slate)' }}>
                       {isActive ? '▲ Collapse' : '▼ Browse'}
                     </div>
                   </button>
@@ -357,7 +357,7 @@ export default function Home() {
           {/* Quiz list for selected tag */}
           {selectedTag && activeQuizzes.length > 0 && (
             <div style={{ marginTop: 48 }}>
-              <h3 className="font-display" style={{ fontSize: 22, marginBottom: 24, letterSpacing: '-0.5px' }}>
+              <h3 className="font-display" style={{ fontSize: 22, marginBottom: 24, letterSpacing: '-0.5px', color: 'var(--paper)' }}>
                 {tagMeta(selectedTag).emoji} {selectedTag}
               </h3>
               <div className="quiz-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
@@ -366,7 +366,7 @@ export default function Home() {
                   const diff = quiz.difficulty ? DIFF_STYLE[quiz.difficulty] : null;
                   return (
                     <div key={quiz.id} style={{
-                      background: '#fff', border: '1.5px solid #D8D4C8',
+                      background: 'var(--surface)', border: '1.5px solid var(--surface-border)',
                       borderRadius: 8, padding: '20px 20px 16px',
                       display: 'flex', flexDirection: 'column',
                     }}>
@@ -377,13 +377,13 @@ export default function Home() {
                           </span>
                         )}
                         {played && (
-                          <span style={{ background: '#DCF5E4', color: '#1b7a3d', fontSize: 10, fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', padding: '4px 8px', borderRadius: 3 }}>
+                          <span style={{ background: 'rgba(46,204,113,0.15)', color: 'var(--green)', fontSize: 10, fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', padding: '4px 8px', borderRadius: 3 }}>
                             ✓ Played
                           </span>
                         )}
                       </div>
-                      <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--ink)', marginBottom: 6, lineHeight: 1.3 }}>{quiz.title}</div>
-                      <div style={{ fontSize: 13, color: '#6b6f7d', lineHeight: 1.5, flex: 1, marginBottom: 16 }}>
+                      <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--paper)', marginBottom: 6, lineHeight: 1.3 }}>{quiz.title}</div>
+                      <div style={{ fontSize: 13, color: 'var(--slate)', lineHeight: 1.5, flex: 1, marginBottom: 16 }}>
                         {quiz.description || 'A quick, friendly quiz experience.'}
                       </div>
                       {played ? (
@@ -391,8 +391,8 @@ export default function Home() {
                           onClick={() => navigate(`/quiz/${quiz.id}?review=true`)}
                           style={{
                             background: 'transparent',
-                            color: '#1b7a3d',
-                            border: '1.5px solid #2ECC71',
+                            color: 'var(--green)',
+                            border: '1.5px solid var(--green)',
                             borderRadius: 6, padding: '10px 18px',
                             fontWeight: 700, fontSize: 13, cursor: 'pointer',
                             transition: 'opacity 0.15s', alignSelf: 'flex-start',
@@ -406,7 +406,7 @@ export default function Home() {
                         <button
                           onClick={() => handleStartQuiz(quiz.id)}
                           style={{
-                            background: 'var(--ink)', color: 'var(--paper)',
+                            background: 'var(--pink)', color: '#fff',
                             border: 'none', borderRadius: 6, padding: '10px 18px',
                             fontWeight: 700, fontSize: 13, cursor: 'pointer',
                             transition: 'opacity 0.15s', alignSelf: 'flex-start',
