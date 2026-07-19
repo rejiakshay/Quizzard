@@ -6,7 +6,7 @@ import { AuthContext } from '../context/AuthContext';
 import { getLevel, applyQuizToGuest, getAnimationTier, LEVELS_CONFIG, getGuestPlayer, scoreQuiz } from '../utils/levels';
 import { trackEvent } from '../utils/analytics';
 
-const TIMER_SECONDS = 10;
+const getTimerSeconds = (difficulty) => (difficulty === 'medium' || difficulty === 'hard') ? 12 : 10;
 
 function LevelUpToast({ label }) {
   const [visible, setVisible] = useState(true);
@@ -166,7 +166,7 @@ export default function QuizPage() {
   const [pastResponses, setPastResponses] = useState(null);
 
   const [timerPct, setTimerPct] = useState(100);
-  const [timeLeftDisplay, setTimeLeftDisplay] = useState(TIMER_SECONDS);
+  const [timeLeftDisplay, setTimeLeftDisplay] = useState(10);
   const rafRef = useRef(null);
   const startTimeRef = useRef(null);
   const timedOutRef = useRef(false);
@@ -193,14 +193,15 @@ export default function QuizPage() {
 
   useEffect(() => {
     if (!quiz || result) return;
+    const TIMER = getTimerSeconds(quiz.difficulty);
     timedOutRef.current = false;
     setTimerPct(100);
-    setTimeLeftDisplay(TIMER_SECONDS);
+    setTimeLeftDisplay(TIMER);
     startTimeRef.current = performance.now();
     const tick = (now) => {
       const elapsed = (now - startTimeRef.current) / 1000;
-      const remaining = Math.max(0, TIMER_SECONDS - elapsed);
-      setTimerPct((remaining / TIMER_SECONDS) * 100);
+      const remaining = Math.max(0, TIMER - elapsed);
+      setTimerPct((remaining / TIMER) * 100);
       setTimeLeftDisplay(Math.ceil(remaining));
       if (remaining > 0) rafRef.current = requestAnimationFrame(tick);
       else if (!timedOutRef.current) { timedOutRef.current = true; setTimeLeftDisplay(0); }
