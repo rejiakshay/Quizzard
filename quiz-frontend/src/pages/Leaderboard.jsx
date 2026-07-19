@@ -26,7 +26,7 @@ export default function Leaderboard() {
         }}>
           <div style={{ position: 'absolute', top: -30, right: -30, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
           <h2 className="font-display" style={{ fontSize: 28, color: '#fff', marginBottom: 6 }}>🏆 Global Leaderboard</h2>
-          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.75)', fontWeight: 500 }}>Top scores from players around the world.</p>
+          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.75)', fontWeight: 500 }}>Ranked by total points earned across all quizzes.</p>
         </div>
 
         {/* Entries */}
@@ -43,34 +43,33 @@ export default function Leaderboard() {
             leaderboard.map((entry, index) => {
               const isTop3 = index < 3;
               return (
-                <div key={`${entry.user?.id}-${entry.completedAt}`} style={{
+                <div key={entry.user.id} style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
                   padding: '14px 18px', borderRadius: 8, marginBottom: 4,
                   background: isTop3 ? 'rgba(255,255,255,0.04)' : 'transparent',
                   border: isTop3 ? '1px solid rgba(255,255,255,0.06)' : '1px solid transparent',
-                  transition: 'background 0.15s',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                     <span style={{ fontSize: isTop3 ? 22 : 15, minWidth: 28, textAlign: 'center', fontFamily: 'JetBrains Mono, monospace', color: 'var(--slate)', fontWeight: 700 }}>
                       {medals[index] || `#${index + 1}`}
                     </span>
-                    {entry.user?.pictureUrl ? (
+                    {entry.user.pictureUrl ? (
                       <img src={entry.user.pictureUrl} alt={entry.user.name} style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid var(--surface-border)', flexShrink: 0 }} />
                     ) : (
                       <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--ink)', border: '2px solid var(--surface-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--paper)' }}>{(entry.user?.name || '?')[0]}</span>
+                        <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--paper)' }}>{(entry.user.name || '?')[0].toUpperCase()}</span>
                       </div>
                     )}
                     <div>
-                      <p style={{ fontWeight: 700, color: 'var(--paper)', fontSize: 14, marginBottom: 2 }}>{entry.user?.name || 'Anonymous'}</p>
+                      <p style={{ fontWeight: 700, color: 'var(--paper)', fontSize: 14, marginBottom: 2 }}>{entry.user.name || 'Anonymous'}</p>
                       <p style={{ fontSize: 11, color: 'var(--slate)', fontFamily: 'JetBrains Mono, monospace' }}>
-                        Quiz #{entry.quizId} · {new Date(entry.completedAt).toLocaleDateString()}
+                        {entry.quizzesPlayed} quiz{entry.quizzesPlayed !== 1 ? 'zes' : ''} completed
                       </p>
                     </div>
                   </div>
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <p className="font-mono" style={{ fontSize: 22, fontWeight: 700, color: index === 0 ? 'var(--yellow)' : index === 1 ? 'var(--slate)' : index === 2 ? '#cd7c3a' : 'var(--paper)', lineHeight: 1 }}>
-                      {entry.score}
+                    <p className="font-mono" style={{ fontSize: 22, fontWeight: 700, color: index === 0 ? 'var(--yellow)' : index === 1 ? '#c0c8d8' : index === 2 ? '#cd7c3a' : 'var(--paper)', lineHeight: 1 }}>
+                      {entry.totalPoints.toLocaleString()}
                     </p>
                     <p style={{ fontSize: 10, color: 'var(--slate)', marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.5px' }}>pts</p>
                   </div>
