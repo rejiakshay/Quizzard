@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { AuthContext } from '../context/AuthContext';
 import LoginModal from '../components/LoginModal';
+import { trackEvent } from '../utils/analytics';
 
 const TAG_META = {
   Geography:        { emoji: '🌍', bg: '#FFF1CE' },
@@ -167,6 +168,8 @@ export default function Home() {
 
   const startQuiz = async (quizId) => {
     try { await api.post(`/quizzes/${quizId}/play`); } catch {}
+    const quiz = quizzes.find(q => q.id === quizId);
+    trackEvent('quiz_started_home', { quiz_id: quizId, title: quiz?.title, tag: quiz?.tag, difficulty: quiz?.difficulty });
     navigate(`/quiz/${quizId}`);
   };
 
@@ -328,7 +331,7 @@ export default function Home() {
                 return (
                   <button
                     key={tag}
-                    onClick={() => setSelectedTag(isActive ? null : tag)}
+                    onClick={() => { const next = isActive ? null : tag; setSelectedTag(next); if (next) trackEvent('category_selected', { tag: next }); }}
                     style={{
                       background: isActive ? 'var(--pink)' : 'var(--surface)',
                       border: `1.5px solid ${isActive ? 'var(--pink)' : 'var(--surface-border)'}`,

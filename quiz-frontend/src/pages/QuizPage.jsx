@@ -4,6 +4,7 @@ import { useContext } from 'react';
 import api from '../utils/api';
 import { AuthContext } from '../context/AuthContext';
 import { getLevel, applyQuizToGuest, getAnimationTier, LEVELS_CONFIG, getGuestPlayer, scoreQuiz } from '../utils/levels';
+import { trackEvent } from '../utils/analytics';
 
 const TIMER_SECONDS = 10;
 
@@ -172,7 +173,10 @@ export default function QuizPage() {
 
   useEffect(() => {
     api.get(`/quizzes/${id}`)
-      .then((r) => setQuiz(r.data.quiz))
+      .then((r) => {
+        setQuiz(r.data.quiz);
+        if (!isReview) trackEvent('quiz_started', { quiz_id: Number(id), title: r.data.quiz?.title, tag: r.data.quiz?.tag, difficulty: r.data.quiz?.difficulty });
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
 
@@ -240,9 +244,10 @@ export default function QuizPage() {
 
       if (!user) {
         const levelResult = applyQuizToGuest(data.score, data.total);
-        setResult({ ...data, ...levelResult });
+        const final = { ...data, ...levelResult };
+        trackEvent('quiz_completed', { quiz_id: Number(id), title: quiz?.title, tag: quiz?.tag, difficulty: quiz?.difficulty, score: data.score, total: data.total, pct: Math.round((data.score / data.total) * 100), guest: true });
+        setResult(final);
       } else {
-        // If backend didn't return level data (silent error in try/catch), compute locally as fallback
         let resultData = { ...data };
         if (!data.levelAfter && user?.totalPoints !== undefined) {
           const earned = scoreQuiz(data.score, data.total);
@@ -250,7 +255,7 @@ export default function QuizPage() {
           const newTotal = user.totalPoints + earned;
           resultData = { ...data, pointsEarned: earned, totalPoints: newTotal, levelBefore: before, levelAfter: getLevel(newTotal) };
         }
-        // Update user totalPoints in context so Header reflects new level immediately
+        trackEvent('quiz_completed', { quiz_id: Number(id), title: quiz?.title, tag: quiz?.tag, difficulty: quiz?.difficulty, score: resultData.score, total: resultData.total, pct: Math.round((resultData.score / resultData.total) * 100), points_earned: resultData.pointsEarned, level: resultData.levelAfter?.label });
         if (resultData.totalPoints) setUser(u => ({ ...u, totalPoints: resultData.totalPoints }));
         setResult(resultData);
       }
@@ -262,12 +267,13 @@ export default function QuizPage() {
       }, 0);
       if (!user) {
         const levelResult = applyQuizToGuest(score, quiz.questions.length);
+        trackEvent('quiz_completed', { quiz_id: Number(id), title: quiz?.title, tag: quiz?.tag, score, total: quiz.questions.length, pct: Math.round((score / quiz.questions.length) * 100), guest: true });
         setResult({ score, total: quiz.questions.length, details: [], ...levelResult });
       } else {
-        // Compute level locally on network error too
         const earned = scoreQuiz(score, quiz.questions.length);
         const before = getLevel(user.totalPoints);
         const newTotal = user.totalPoints + earned;
+        trackEvent('quiz_completed', { quiz_id: Number(id), title: quiz?.title, tag: quiz?.tag, score, total: quiz.questions.length, pct: Math.round((score / quiz.questions.length) * 100), points_earned: earned });
         setUser(u => ({ ...u, totalPoints: newTotal }));
         setResult({ score, total: quiz.questions.length, details: [], pointsEarned: earned, totalPoints: newTotal, levelBefore: before, levelAfter: getLevel(newTotal) });
       }
