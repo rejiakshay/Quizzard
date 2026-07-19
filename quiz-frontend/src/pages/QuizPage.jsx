@@ -8,6 +8,22 @@ import { trackEvent } from '../utils/analytics';
 
 const getTimerSeconds = (difficulty) => (difficulty === 'medium' || difficulty === 'hard') ? 12 : 10;
 
+// Seeded shuffle — same seed always produces same order (stable within a session)
+function seededShuffle(arr, seed) {
+  const a = [...arr];
+  let s = seed;
+  for (let i = a.length - 1; i > 0; i--) {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    const j = Math.abs(s) % (i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function getShuffledOptions(options, sessionSeed, questionId) {
+  return seededShuffle(options, sessionSeed ^ (questionId * 2654435761));
+}
+
 function LevelUpToast({ label }) {
   const [visible, setVisible] = useState(true);
   useEffect(() => { const t = setTimeout(() => setVisible(false), 3500); return () => clearTimeout(t); }, []);
@@ -164,6 +180,8 @@ export default function QuizPage() {
   const [selectedOptionId, setSelectedOptionId] = useState(null);
   const [currentQuestionResult, setCurrentQuestionResult] = useState(null);
   const [pastResponses, setPastResponses] = useState(null);
+  // Random seed per session — all questions shuffle consistently within one play
+  const sessionSeedRef = useRef(Math.floor(Math.random() * 0x7fffffff));
 
   const [timerPct, setTimerPct] = useState(100);
   const [timeLeftDisplay, setTimeLeftDisplay] = useState(10);
@@ -367,7 +385,7 @@ export default function QuizPage() {
                 <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink)', lineHeight: 1.5, marginBottom: 16 }}>{question.questionText}</h3>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {question.options.map((option) => {
+                  {getShuffledOptions(question.options, sessionSeedRef.current, question.id).map((option) => {
                     const isCorrect = option.isCorrect;
                     const wasSelected = past?.selectedOptionId === option.id;
                     const wasWrong = wasSelected && !isCorrect;
@@ -544,6 +562,7 @@ export default function QuizPage() {
   }
 
   const question = quiz.questions[currentQuestionIndex];
+  const shuffledOptions = getShuffledOptions(question.options, sessionSeedRef.current, question.id);
   const isLastQuestion = quiz.questions.length === currentQuestionIndex + 1;
   const progressPct = (currentQuestionIndex / quiz.questions.length) * 100;
   const timerColor = timerPct > 50 ? '#3b82f6' : timerPct > 30 ? '#f59e0b' : '#ef4444';
@@ -590,7 +609,7 @@ export default function QuizPage() {
           <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--paper)', lineHeight: 1.4, marginBottom: 20 }}>{question.questionText}</h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {question.options.map((option) => {
+            {shuffledOptions.map((option) => {
               const isSelected = selectedOptionId === option.id;
               const showCorrect = currentQuestionResult && option.id === currentQuestionResult.correctOptionId;
               const isWrongSelected = currentQuestionResult && isSelected && !option.isCorrect;
