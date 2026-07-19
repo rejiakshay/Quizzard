@@ -3,18 +3,25 @@ const prisma = require('../config/database');
 const router = express.Router();
 
 router.get('/global', async (req, res) => {
-  const leaderboard = await prisma.score.findMany({
-    orderBy: [{ score: 'desc' }, { completedAt: 'asc' }],
+  const users = await prisma.user.findMany({
+    where: { totalPoints: { gt: 1000 } },
+    orderBy: { totalPoints: 'desc' },
     take: 20,
     select: {
-      score: true,
-      completedAt: true,
-      quizId: true,
-      user: {
-        select: { id: true, name: true, pictureUrl: true },
-      },
+      id: true,
+      name: true,
+      pictureUrl: true,
+      totalPoints: true,
+      scores: { select: { _count: true }, orderBy: { completedAt: 'desc' }, take: 1 },
+      _count: { select: { scores: true } },
     },
   });
+
+  const leaderboard = users.map(u => ({
+    user: { id: u.id, name: u.name, pictureUrl: u.pictureUrl },
+    totalPoints: u.totalPoints,
+    quizzesPlayed: u._count.scores,
+  }));
 
   res.json({ leaderboard });
 });
