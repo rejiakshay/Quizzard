@@ -6,7 +6,46 @@ import { AuthContext } from '../context/AuthContext';
 import { getLevel, applyQuizToGuest, getAnimationTier, LEVELS_CONFIG, getGuestPlayer, scoreQuiz } from '../utils/levels';
 import { trackEvent } from '../utils/analytics';
 
-const getTimerSeconds = (difficulty) => (difficulty === 'medium' || difficulty === 'hard') ? 12 : 10;
+const TIMER_SECONDS = 15;
+
+// Sound synthesis using Web Audio API — no external files needed
+function playSound(type) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const master = ctx.createGain();
+    master.connect(ctx.destination);
+
+    if (type === 'correct') {
+      // Bright ascending two-tone chime
+      [[523, 0, 0.12], [659, 0.1, 0.12], [784, 0.2, 0.18]].forEach(([freq, delay, dur]) => {
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.connect(g); g.connect(master);
+        osc.type = 'sine'; osc.frequency.value = freq;
+        const t = ctx.currentTime + delay;
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.25, t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+        osc.start(t); osc.stop(t + dur + 0.05);
+      });
+    } else if (type === 'wrong') {
+      // Low descending buzz
+      [[220, 0, 0.15], [180, 0.15, 0.2]].forEach(([freq, delay, dur]) => {
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.connect(g); g.connect(master);
+        osc.type = 'sawtooth'; osc.frequency.value = freq;
+        const t = ctx.currentTime + delay;
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.15, t + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+        osc.start(t); osc.stop(t + dur + 0.05);
+      });
+    }
+
+    setTimeout(() => ctx.close(), 800);
+  } catch {}
+}
 
 // Seeded shuffle — same seed always produces same order (stable within a session)
 function seededShuffle(arr, seed) {
@@ -184,7 +223,8 @@ export default function QuizPage() {
   const sessionSeedRef = useRef(Math.floor(Math.random() * 0x7fffffff));
 
   const [timerPct, setTimerPct] = useState(100);
-  const [timeLeftDisplay, setTimeLeftDisplay] = useState(10);
+  const [timeLeftDisplay, setTimeLeftDisplay] = useState(TIMER_SECONDS);
+  const [answerFlash, setAnswerFlash] = useState(null); // 'correct' | 'wrong' | null
   const rafRef = useRef(null);
   const startTimeRef = useRef(null);
   const timedOutRef = useRef(false);
@@ -211,15 +251,15 @@ export default function QuizPage() {
 
   useEffect(() => {
     if (!quiz || result) return;
-    const TIMER = getTimerSeconds(quiz.difficulty);
     timedOutRef.current = false;
     setTimerPct(100);
-    setTimeLeftDisplay(TIMER);
+    setTimeLeftDisplay(TIMER_SECONDS);
+    setAnswerFlash(null);
     startTimeRef.current = performance.now();
     const tick = (now) => {
       const elapsed = (now - startTimeRef.current) / 1000;
-      const remaining = Math.max(0, TIMER - elapsed);
-      setTimerPct((remaining / TIMER) * 100);
+      const remaining = Math.max(0, TIMER_SECONDS - elapsed);
+      setTimerPct((remaining / TIMER_SECONDS) * 100);
       setTimeLeftDisplay(Math.ceil(remaining));
       if (remaining > 0) rafRef.current = requestAnimationFrame(tick);
       else if (!timedOutRef.current) { timedOutRef.current = true; setTimeLeftDisplay(0); }
@@ -251,6 +291,10 @@ export default function QuizPage() {
     setAnswers((c) => ({ ...c, [question.id]: option.id }));
     setSelectedOptionId(option.id);
     setCurrentQuestionResult({ isCorrect: option.isCorrect, correctOptionId: correctOption?.id, correctOptionText: correctOption?.text });
+    const flash = option.isCorrect ? 'correct' : 'wrong';
+    setAnswerFlash(flash);
+    playSound(flash);
+    setTimeout(() => setAnswerFlash(null), option.isCorrect ? 1800 : 700);
   };
 
   const handleSubmit = async () => {
@@ -569,6 +613,56 @@ export default function QuizPage() {
 
   return (
     <div style={wrap}>
+      <style>{`
+        @keyframes flashCorrect {
+          0%   { opacity: 0; }
+          20%  { opacity: 1; }
+          100% { opacity: 0; }
+        }
+        @keyframes flashWrong {
+          0%   { opacity: 0; }
+          20%  { opacity: 1; }
+          100% { opacity: 0; }
+        }
+        @keyframes popParticle {
+          0%   { transform: translate(0,0) scale(1); opacity: 1; }
+          60%  { opacity: 1; }
+          100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+        }
+      `}</style>
+
+      {/* Full-screen flash on answer */}
+      {answerFlash && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 999, pointerEvents: 'none',
+          background: answerFlash === 'correct' ? 'rgba(46,204,113,0.12)' : 'rgba(255,59,105,0.12)',
+          animation: `${answerFlash === 'correct' ? 'flashCorrect' : 'flashWrong'} ${answerFlash === 'correct' ? '1.8s' : '0.7s'} ease forwards`,
+        }} />
+      )}
+
+      {/* Confetti burst on correct */}
+      {answerFlash === 'correct' && (
+        <div style={{ position: 'fixed', top: '40%', left: '50%', zIndex: 1000, pointerEvents: 'none' }}>
+          {Array.from({ length: 28 }, (_, i) => {
+            const angle = (i / 28) * 360;
+            const dist = 80 + Math.random() * 120;
+            const tx = Math.cos((angle * Math.PI) / 180) * dist;
+            const ty = Math.sin((angle * Math.PI) / 180) * dist;
+            const colors = ['#2ECC71', '#FFC53D', '#FF3B69', '#fff', '#3b82f6', '#a78bfa'];
+            const size = 6 + Math.random() * 8;
+            return (
+              <div key={i} style={{
+                position: 'absolute', width: size, height: size,
+                background: colors[i % colors.length],
+                '--tx': `${tx}px`, '--ty': `${ty}px`,
+                animation: `popParticle 1.8s ease forwards`,
+                animationDelay: `${(i % 4) * 0.06}s`,
+              }} />
+            );
+          })}
+        </div>
+      )}
+
       <div style={inner}>
         {/* Header card */}
         <div style={card}>

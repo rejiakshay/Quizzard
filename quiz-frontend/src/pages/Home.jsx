@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { AuthContext } from '../context/AuthContext';
@@ -23,135 +23,24 @@ const DIFF_STYLE = {
   hard:   { background: '#FFE1EA', color: '#b3325c' },
 };
 
-const SAMPLE_QUESTIONS = [
-  { cat: 'World Geography', qNum: 'QUESTION 4 OF 10', q: 'Which river flows through the most countries?', opts: ['Danube', 'Nile', 'Amazon', 'Yangtze'], correct: 0, ring: 7, streak: '×5' },
-  { cat: 'Science', qNum: 'QUESTION 2 OF 10', q: 'What gas do plants absorb from the air?', opts: ['Oxygen', 'Nitrogen', 'Carbon dioxide', 'Hydrogen'], correct: 2, ring: 9, streak: '×3' },
-  { cat: 'Movies & TV', qNum: 'QUESTION 6 OF 10', q: 'Who directed Jurassic Park?', opts: ['James Cameron', 'Steven Spielberg', 'Ridley Scott', 'Peter Jackson'], correct: 1, ring: 5, streak: '×8' },
-  { cat: 'Hindu Mythology', qNum: 'QUESTION 3 OF 10', q: 'Which asura was killed by the Narasimha avatar?', opts: ['Hiranyaksha', 'Hiranyakashipu', 'Mahishasura', 'Ravana'], correct: 1, ring: 6, streak: '×4' },
+// Background glyph definitions for hero
+const BG_GLYPHS = [
+  { sym: '?',  top: '8%',  left: '4%',   size: 110, rot: '-15deg', op: 0.045 },
+  { sym: '✓',  top: '72%', left: '2%',   size: 80,  rot: '8deg',   op: 0.04  },
+  { sym: 'A',  top: '15%', right: '5%',  size: 90,  rot: '12deg',  op: 0.04  },
+  { sym: '★',  top: '60%', right: '3%',  size: 70,  rot: '-8deg',  op: 0.05  },
+  { sym: '!',  top: '40%', left: '7%',   size: 65,  rot: '-5deg',  op: 0.035 },
+  { sym: 'B',  top: '80%', right: '12%', size: 60,  rot: '10deg',  op: 0.035 },
+  { sym: '◆',  top: '25%', left: '14%',  size: 40,  rot: '20deg',  op: 0.05  },
+  { sym: '○',  top: '50%', right: '18%', size: 55,  rot: '0deg',   op: 0.04  },
+  { sym: 'D',  top: '88%', left: '22%',  size: 50,  rot: '-12deg', op: 0.035 },
+  { sym: '▲',  top: '5%',  left: '45%',  size: 38,  rot: '5deg',   op: 0.04  },
+  { sym: '✗',  top: '65%', left: '48%',  size: 44,  rot: '-18deg', op: 0.035 },
+  { sym: 'C',  top: '35%', right: '8%',  size: 56,  rot: '-6deg',  op: 0.04  },
+  { sym: '?',  top: '55%', left: '30%',  size: 32,  rot: '14deg',  op: 0.03  },
+  { sym: '✦',  top: '18%', right: '22%', size: 34,  rot: '0deg',   op: 0.05  },
+  { sym: '◇',  top: '92%', right: '30%', size: 46,  rot: '22deg',  op: 0.04  },
 ];
-const LETTERS = ['A', 'B', 'C', 'D'];
-
-function AnimatedCard() {
-  const [idx, setIdx] = useState(0);
-  const [fading, setFading] = useState(false);
-
-  useEffect(() => {
-    const t = setInterval(() => {
-      setFading(true);
-      setTimeout(() => {
-        setIdx(i => (i + 1) % SAMPLE_QUESTIONS.length);
-        setFading(false);
-      }, 250);
-    }, 2800);
-    return () => clearInterval(t);
-  }, []);
-
-  const q = SAMPLE_QUESTIONS[idx];
-  const circumference = 2 * Math.PI * 18;
-  const offset = circumference - (q.ring / 10) * circumference;
-
-  return (
-    <div style={{
-      background: 'var(--paper)', color: 'var(--ink)',
-      width: '100%', maxWidth: 400,
-      borderRadius: 10, padding: '26px 26px 22px',
-      transform: 'rotate(3deg)',
-      boxShadow: '0 24px 60px rgba(0,0,0,0.45), 0 0 0 6px rgba(255,255,255,0.03)',
-      position: 'relative',
-    }}>
-      {/* LIVE badge */}
-      <div style={{
-        position: 'absolute', top: -14, right: 20,
-        background: 'var(--ink)', color: 'var(--yellow)',
-        borderRadius: 5, padding: '8px 12px',
-        fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fontWeight: 700,
-        display: 'flex', alignItems: 'center', gap: 6,
-        boxShadow: '0 8px 20px rgba(0,0,0,0.3)',
-        transform: 'rotate(-4deg)',
-      }}>
-        <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--pink)', display: 'inline-block' }} className="animate-pulse-dot" />
-        LIVE
-      </div>
-
-      {/* Card top */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-        <div style={{
-          background: 'var(--ink)', color: 'var(--yellow)',
-          fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fontWeight: 700,
-          letterSpacing: '0.5px', textTransform: 'uppercase',
-          padding: '5px 10px', borderRadius: 4,
-        }}>{q.cat}</div>
-        <div style={{ position: 'relative', width: 44, height: 44 }}>
-          <svg width="44" height="44" style={{ transform: 'rotate(-90deg)' }}>
-            <circle stroke="#D8D4C8" fill="none" strokeWidth="4" cx="22" cy="22" r="18" />
-            <circle stroke="var(--pink)" fill="none" strokeWidth="4" strokeLinecap="round"
-              cx="22" cy="22" r="18"
-              strokeDasharray={circumference}
-              strokeDashoffset={offset}
-              style={{ transition: 'stroke-dashoffset 0.5s ease' }}
-            />
-          </svg>
-          <div style={{
-            position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'JetBrains Mono, monospace', fontWeight: 700, fontSize: 15, color: 'var(--ink)',
-          }}>{q.ring}</div>
-        </div>
-      </div>
-
-      {/* Question */}
-      <div className={`card-fade${fading ? ' out' : ''}`}>
-        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'var(--slate)', letterSpacing: '0.5px', marginBottom: 8 }}>{q.qNum}</div>
-        <div style={{ fontWeight: 700, fontSize: 17, lineHeight: 1.3, marginBottom: 18, color: 'var(--ink)' }}>{q.q}</div>
-        <div>
-          {q.opts.map((opt, i) => {
-            const isCorrect = i === q.correct;
-            return (
-              <div key={i} style={{
-                display: 'flex', alignItems: 'center', gap: 12,
-                background: isCorrect ? 'rgba(46,204,113,0.12)' : '#fff',
-                border: `1.5px solid ${isCorrect ? 'var(--green)' : '#D8D4C8'}`,
-                borderRadius: 6, padding: '10px 14px', marginBottom: 8,
-                fontSize: 13, fontWeight: 500, color: 'var(--ink)',
-              }}>
-                <span style={{
-                  width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
-                  background: isCorrect ? 'var(--green)' : '#D8D4C8',
-                  color: isCorrect ? '#fff' : 'var(--ink)',
-                  fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fontWeight: 700,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>{LETTERS[i]}</span>
-                {opt}
-                {isCorrect && <span style={{ marginLeft: 'auto', color: 'var(--green)', fontWeight: 700 }}>✓</span>}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14, paddingTop: 14, borderTop: '1px dashed #D8D4C8' }}>
-        <div style={{ fontSize: 12, color: 'var(--slate)', fontWeight: 500 }}>
-          Streak <b style={{ color: 'var(--pink)', fontFamily: 'JetBrains Mono, monospace' }}>{q.streak}</b>
-        </div>
-        <div style={{ display: 'flex' }}>
-          {['#FFC53D', '#FF3B69', '#2ECC71'].map((c, i) => (
-            <div key={i} style={{ width: 22, height: 22, borderRadius: '50%', border: '2px solid var(--paper)', marginLeft: -8, background: c }} />
-          ))}
-        </div>
-      </div>
-
-      {/* Points badge */}
-      <div style={{
-        position: 'absolute', bottom: -16, left: -10,
-        background: 'var(--ink)', color: 'var(--green)',
-        borderRadius: 5, padding: '8px 12px',
-        fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fontWeight: 700,
-        boxShadow: '0 8px 20px rgba(0,0,0,0.3)',
-        transform: 'rotate(3deg)',
-      }}>+120 PTS</div>
-    </div>
-  );
-}
 
 export default function Home() {
   const { user } = useContext(AuthContext);
@@ -212,99 +101,76 @@ export default function Home() {
       )}
 
       {/* ── Hero ── */}
-      <section className="hero-grid page-pad" style={{ position: 'relative', padding: '60px 64px 100px', minHeight: 620, maxWidth: 1200, margin: '0 auto' }}>
+      <section style={{ position: 'relative', padding: '80px 32px 100px', overflow: 'hidden' }}>
         {/* Background glyphs */}
-        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
-          {[
-            { top: '10%', left: '8%', rot: '-12deg', size: 120 },
-            { top: '55%', left: '2%', rot: '8deg',  size: 90  },
-            { top: '70%', left: '40%', rot: '-6deg', size: 70 },
-            { top: '5%',  left: '55%', rot: '10deg', size: 60 },
-          ].map((g, i) => (
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
+          {BG_GLYPHS.map((g, i) => (
             <span key={i} className="font-display" style={{
-              position: 'absolute', top: g.top, left: g.left,
-              fontSize: g.size, transform: `rotate(${g.rot})`,
-              color: 'rgba(245,242,234,0.045)', userSelect: 'none',
-            }}>{i % 2 === 0 ? '?' : '✓'}</span>
+              position: 'absolute',
+              top: g.top, left: g.left, right: g.right,
+              fontSize: g.size,
+              transform: `rotate(${g.rot})`,
+              color: `rgba(245,242,234,${g.op})`,
+              userSelect: 'none', lineHeight: 1,
+            }}>{g.sym}</span>
           ))}
         </div>
 
-        {/* Left content */}
-        <div style={{ position: 'relative', zIndex: 2 }}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 10,
-            color: 'var(--pink)',
-            fontFamily: 'JetBrains Mono, monospace', fontSize: 12, fontWeight: 700,
-            letterSpacing: '1.5px', textTransform: 'uppercase',
-            paddingLeft: 14, borderLeft: '3px solid var(--pink)',
-            marginBottom: 28,
-          }}>
-            <span className="animate-pulse-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--pink)', display: 'inline-block' }} />
-            Live now
+        {/* Centered content */}
+        <div style={{ position: 'relative', zIndex: 2, maxWidth: 720, margin: '0 auto', textAlign: 'center' }}>
+
+          {/* App name */}
+          <div className="font-display" style={{ fontSize: 'clamp(52px, 7vw, 88px)', fontWeight: 900, letterSpacing: '-3px', lineHeight: 0.9, color: 'var(--paper)', marginBottom: 20 }}>
+            Quizzard
           </div>
 
-          <h1 className="font-display" style={{ fontSize: 'clamp(40px, 4.8vw, 68px)', lineHeight: 0.98, letterSpacing: '-1.5px', marginBottom: 24, color: 'var(--paper)' }}>
-            Play. Learn.<br />
-            <span style={{
-              color: 'var(--ink)', background: 'var(--yellow)',
-              padding: '0 10px', display: 'inline-block',
-              transform: 'rotate(-1.2deg)', marginTop: 8,
-              boxShadow: '6px 6px 0 var(--pink-dim)',
-            }}>Repeat.</span>
+          {/* Tagline */}
+          <h1 className="font-display" style={{ fontSize: 'clamp(28px, 4vw, 48px)', lineHeight: 1.05, letterSpacing: '-1px', marginBottom: 28, color: 'var(--paper)', fontWeight: 800 }}>
+            Play. Learn. Repeat.
           </h1>
 
-          <p style={{ fontSize: 17, lineHeight: 1.6, color: 'var(--slate)', maxWidth: 460, marginBottom: 36 }}>
-            Play instantly as a guest, or sign in to track what you've learned and see how it stacks up. <b style={{ color: 'var(--paper)', fontWeight: 700 }}>No downloads, no signup wall</b> — just tap and play.
+          <p style={{ fontSize: 16, lineHeight: 1.7, color: 'var(--slate)', maxWidth: 480, margin: '0 auto 40px', fontWeight: 400 }}>
+            Play instantly as a guest, or sign in to track your progress and climb the leaderboard.{' '}
+            <b style={{ color: 'var(--paper)', fontWeight: 600 }}>No downloads, no signup wall.</b>
           </p>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 48 }}>
+          {/* CTAs */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 64, flexWrap: 'wrap' }}>
             <button
               onClick={() => { if (tags.length > 0) { setSelectedTag(tags[0]); document.getElementById('categories')?.scrollIntoView({ behavior: 'smooth' }); } }}
               style={{
-                fontWeight: 700, fontSize: 16,
-                background: 'var(--pink)', color: 'var(--ink)',
-                border: 'none', borderRadius: 6,
-                padding: '16px 32px', cursor: 'pointer',
-                boxShadow: '0 5px 0 var(--pink-dim)',
+                fontWeight: 700, fontSize: 15,
+                background: 'var(--green)', color: '#fff',
+                border: 'none',
+                padding: '15px 36px', cursor: 'pointer',
+                boxShadow: '0 5px 0 #1a9e52, 0 8px 24px rgba(46,204,113,0.3)',
                 transition: 'transform 0.1s, box-shadow 0.1s',
-                display: 'flex', alignItems: 'center', gap: 10,
+                letterSpacing: '0.3px',
               }}
-              onMouseDown={e => { e.currentTarget.style.transform = 'translateY(5px)'; e.currentTarget.style.boxShadow = '0 0 0 var(--pink-dim)'; }}
-              onMouseUp={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 5px 0 var(--pink-dim)'; }}
+              onMouseDown={e => { e.currentTarget.style.transform = 'translateY(5px)'; e.currentTarget.style.boxShadow = '0 0 0 #1a9e52, 0 4px 12px rgba(46,204,113,0.2)'; }}
+              onMouseUp={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 5px 0 #1a9e52, 0 8px 24px rgba(46,204,113,0.3)'; }}
             >
               Play now →
             </button>
-            <button
-              onClick={() => navigate('/leaderboard')}
-              style={{
-                fontWeight: 500, fontSize: 15, color: 'var(--paper)',
-                background: 'none', border: 'none', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 8,
-                borderBottom: '1px solid rgba(245,242,234,0.3)', paddingBottom: 2,
-              }}
-            >
-              See leaderboard
-            </button>
           </div>
 
-          {/* Stats */}
-          <div style={{ display: 'flex', gap: 32 }}>
+          {/* Stats row */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 0, borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 40 }}>
             {[
-              { num: totalPlays !== null ? totalPlays : '—', lbl: 'Total plays', color: 'var(--paper)' },
-              { num: categoryCount || '—', lbl: 'Categories', color: 'var(--paper)' },
-              { num: `${quizzes.length || '—'}`, lbl: 'Quiz sets', color: 'var(--green)' },
-            ].map(({ num, lbl, color }) => (
-              <div key={lbl}>
-                <div className="font-mono" style={{ fontWeight: 700, fontSize: 24, color }}>{num}</div>
-                <div style={{ fontSize: 11, color: 'var(--slate)', textTransform: 'uppercase', letterSpacing: '0.8px', marginTop: 2 }}>{lbl}</div>
+              { num: totalPlays !== null ? totalPlays : '—', lbl: 'Total plays', accent: 'var(--paper)' },
+              { num: categoryCount || '—',                   lbl: 'Categories',  accent: 'var(--yellow)' },
+              { num: quizzes.length || '—',                  lbl: 'Quiz sets',   accent: 'var(--green)'  },
+            ].map(({ num, lbl, accent }, i, arr) => (
+              <div key={lbl} style={{
+                flex: 1, textAlign: 'center',
+                borderRight: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.07)' : 'none',
+                padding: '0 24px',
+              }}>
+                <div className="font-mono" style={{ fontWeight: 700, fontSize: 30, color: accent, letterSpacing: '-1px' }}>{num}</div>
+                <div style={{ fontSize: 11, color: 'var(--slate)', textTransform: 'uppercase', letterSpacing: '1px', marginTop: 4 }}>{lbl}</div>
               </div>
             ))}
           </div>
-        </div>
-
-        {/* Right: animated card — hidden on mobile */}
-        <div className="hero-card-wrap" style={{ position: 'relative', zIndex: 2 }}>
-          <AnimatedCard />
         </div>
       </section>
 

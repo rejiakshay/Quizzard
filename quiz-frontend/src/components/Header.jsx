@@ -34,17 +34,31 @@ export default function Header() {
         </NavLink>
 
         {/* Nav links — hidden on mobile */}
-        <nav className="nav-links" style={{ gap: 32 }}>
-          {[{ to: '/', label: 'Home' }, { to: '/leaderboard', label: 'Leaderboards' }].map(({ to, label }) => (
+        <nav className="nav-links" style={{ gap: 28 }}>
+          {[
+            { to: '/', label: 'Home' },
+            { to: '/#categories', label: 'Categories', scroll: 'categories' },
+            { to: '/leaderboard', label: 'Leaderboards' },
+            { to: '/daily', label: 'Daily Quiz' },
+            { to: '/about', label: 'About' },
+          ].map(({ to, label, scroll }) => (
             <NavLink
-              key={to}
+              key={label}
               to={to}
               end={to === '/'}
+              onClick={scroll ? (e) => {
+                e.preventDefault();
+                const el = document.getElementById(scroll);
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                else navigate('/');
+              } : undefined}
               style={({ isActive }) => ({
                 color: isActive ? 'var(--paper)' : 'var(--slate)',
-                fontSize: 14, fontWeight: 500, textDecoration: 'none',
-                transition: 'color 0.2s',
+                fontSize: 13, fontWeight: 500, textDecoration: 'none',
+                transition: 'color 0.2s', whiteSpace: 'nowrap',
               })}
+              onMouseEnter={e => { if (e.currentTarget.style.color !== 'var(--paper)') e.currentTarget.style.color = 'rgba(245,242,234,0.75)'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = ''; }}
             >
               {label}
             </NavLink>
